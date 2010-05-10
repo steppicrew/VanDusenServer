@@ -1,0 +1,5 @@
+libwww-perl
+JASON-XS
+DBI
+DBD-SQLite
+HTML-Tree (HTML::Treebuilder)
