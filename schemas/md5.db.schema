@@ -1,0 +1,14 @@
+CREATE TABLE files (
+        path text not null,
+        name test not null,
+        size integer not null,
+        md5 text not null
+    , date integer);
+CREATE INDEX file_md5
+            ON files ( md5 );
+CREATE INDEX file_path
+            ON files ( path );
+CREATE INDEX file_path_name 
+                ON files ( path, name );
+CREATE INDEX file_size
+            ON files ( size );

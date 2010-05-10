@@ -1,0 +1,12 @@
+CREATE TABLE keys (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        value TEXT NOT NULL
+    );
+CREATE TABLE parts (
+        part TEXT PRIMARY KEY,
+        assocs TEXT NOT NULL
+    );
+CREATE INDEX keys_name ON keys (
+        name
+    );

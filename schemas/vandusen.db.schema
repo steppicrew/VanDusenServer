@@ -1,0 +1,13 @@
+CREATE TABLE ftpfiles (
+                path TEXT NOT NULL,
+                name TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                date INTEGER NOT NULL,
+                lastseen DATE NOT NULL,
+                current INTEGER NOT NULL,
+                md5 TEXT
+        );
+CREATE INDEX ftp_path_current
+            ON ftpfiles ( current, path );
+CREATE INDEX ftp_path_name
+            ON ftpfiles ( path, name );

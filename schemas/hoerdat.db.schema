@@ -1,0 +1,111 @@
+CREATE TABLE authors (
+	_id INTEGER PRIMARY KEY,
+	given_name TEXT,
+	name TEXT NOT NULL
+);
+CREATE TABLE files (
+        md5 TEXT PRIMARY KEY NOT NULL,
+        addition TEXT,
+        part_count INTEGER,
+        part_num INTEGER,
+        play_id INTEGER NOT NULL,
+        quality INTEGER
+, last_played INTEGER, play_order INTEGER, length INTEGER);
+CREATE TABLE files_md5 (
+                path text not null,
+                name test not null,
+                size integer not null,
+                md5 text not null,
+                date integer
+            );
+CREATE TABLE genres (
+	_id INTEGER PRIMARY KEY,
+	genre TEXT NOT NULL
+);
+CREATE TABLE keywords (
+	_id INTEGER PRIMARY KEY,
+	keyword TEXT NOT NULL
+);
+CREATE TABLE names (
+	_id INTEGER PRIMARY KEY,
+	name TEXT NOT NULL
+);
+CREATE TABLE play_arranger (
+        play_id INTEGER NOT NULL,
+        arranger_id INTEGER NOT NULL,
+        PRIMARY KEY (play_id, arranger_id)
+);
+CREATE TABLE play_author (
+        play_id INTEGER,
+        author_id INTEGER,
+        PRIMARY KEY (play_id, author_id)
+);
+CREATE TABLE play_director (
+        play_id INTEGER NOT NULL,
+        director_id INTEGER NOT NULL,
+        PRIMARY KEY (play_id, director_id)
+);
+CREATE TABLE play_genre (
+        genre_id INTEGER NOT NULL,
+        play_id INTEGER NOT NULL,
+        PRIMARY KEY (play_id, genre_id)
+);
+CREATE TABLE play_keyword (
+        keyword_id INTEGER NOT NULL,
+        play_id INTEGER NOT NULL,
+        PRIMARY KEY (play_id, keyword_id)
+);
+CREATE TABLE play_station (
+        play_id INTEGER NOT NULL,
+        station_id INTEGER NOT NULL,
+        PRIMARY KEY (play_id, station_id)
+);
+CREATE TABLE playlist_play (
+            playlist_id INTEGER NOT NULL,
+            play_id INTEGER NOT NULL,
+            sort_pos INTEGER NOT NULL,
+            random_pos TEXT,
+            PRIMARY KEY (playlist_id, play_id)
+        );
+CREATE TABLE playlists (
+            _id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE
+        );
+CREATE TABLE plays (
+        _id INTEGER PRIMARY KEY,
+        audio INTEGER,
+        description TEXT,
+        hoerdat_id INTEGER UNIQUE,
+        rating INTEGER,
+        title_id INTEGER NOT NULL,
+        year INTEGER
+);
+CREATE TABLE roles (
+	_id INTEGER PRIMARY KEY,
+	artist_id INTEGER NOT NULL,
+	play_id INTEGER NOT NULL,
+	role TEXT
+);
+CREATE TABLE stations (
+	_id INTEGER PRIMARY KEY,
+	station TEXT NOT NULL
+);
+CREATE TABLE titles (
+	_id INTEGER PRIMARY KEY,
+	play_id INTEGER NOT NULL,
+	title TEXT
+);
+CREATE INDEX authors_name ON authors(name, given_name);
+CREATE INDEX file_md5           ON files_md5     ( md5 );
+CREATE INDEX file_path          ON files_md5     ( path );
+CREATE INDEX file_path_name     ON files_md5     ( path, name );
+CREATE INDEX file_size          ON files_md5     ( size );
+CREATE INDEX files_play ON files(play_id);
+CREATE INDEX play_arranger_play ON play_arranger(play_id);
+CREATE INDEX play_author_play ON play_author(play_id);
+CREATE INDEX play_director_play ON play_director(play_id);
+CREATE INDEX play_genre_play ON play_genre(play_id);
+CREATE INDEX play_keyword_play ON play_keyword(play_id);
+CREATE INDEX play_station_play ON play_station(play_id);
+CREATE INDEX roles_play_artist ON roles(play_id, artist_id);
+CREATE INDEX titles_play ON titles(play_id);

@@ -1,0 +1,7 @@
+
+
+dbdir="`dirname "$0"`/../../dbs"
+
+hoerdat_db="$dbdir/hoerdat.db"
+vandusen_db="$dbdir/ftp.db"
+md5_db="$dbdir/md5.db"

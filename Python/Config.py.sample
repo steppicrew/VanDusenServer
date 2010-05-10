@@ -1,0 +1,40 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""Gets test file from ftp.hp.com"""
+
+import os
+
+class Config(object):
+    def __init__(self):
+        """
+            FTP login credentials
+        """
+        self.ftp_hostname= 'hostname or ip address'
+        self.ftp_username= 'my secret user name'
+        self.ftp_password= 'my even more secret password'
+
+        """base path for all managed directories"""
+        self.base_path= '/mnt/hoerspiele'
+
+        """path to log file for ftp-sessions"""
+        self.ftp_log_path= os.path.join(self.base_path,  "ftp.log")
+
+        """path to db holding md5-hashes"""
+        self.md5_db_path= os.path.join(self.base_path,  "dbs/md5.db")
+
+        """base path for ftp-mirror"""
+        self.ftp_base_path= os.path.join(self.base_path,  "ftp-mirror")
+        """path to ftp db"""
+        self.ftp_db_path= os.path.join(self.base_path,  "dbs/ftp.db")
+        """list of regexps to ignore"""
+        self.ftp_ignore_list= [
+            "^/upload",
+            "^/inhaltsliste/\\w+\\.xls$",
+        ]
+        """list of directories that may be invisible"""
+        self.ftp_possible_hidden_dirs= [
+            '/bis zur Klaerung ausgelagert',
+            '/ausgelagert',
+        ]
+
+        self.hoerdat_db_path= os.path.join(self.base_path, "dbs/hoerdat.db")
