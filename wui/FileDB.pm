@@ -20,7 +20,7 @@ sub new {
     my $sBaseDir= $conf{basedir};
     my $bReadOnly= $conf{readonly};
 
-    die "FileDB: Need at least 'hoerdatdb', 'md5d' and 'basedir' in constructor" unless $sHoerdatDb && $sMd5Db && defined $sBaseDir;
+    die "FileDB: Need at least 'hoerdatdb', 'md5db' and 'basedir' in constructor" unless $sHoerdatDb && $sMd5Db && defined $sBaseDir;
 
     my $fulltext;
 
