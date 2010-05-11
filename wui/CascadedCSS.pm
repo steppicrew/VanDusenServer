@@ -78,6 +78,13 @@ sub render {
                 push @{$css[-1]->{properties}}, "$prop: $value;";
                 # fix: for every "-moz"-property add the same property w/o "-moz-" and with "-webkit-"-prefix
                 if ($prop =~ s/^\-moz\-//) {
+                    my %rewrite= (
+                        'border-radius-topleft' => 'border-top-left-radius',
+                        'border-radius-topright' => 'border-top-right-radius',
+                        'border-radius-bottomleft' => 'border-bottom-left-radius',
+                        'border-radius-bottomright' => 'border-bottom-right-radius',
+                    );
+                    $prop= $rewrite{$prop} if defined $rewrite{$prop};
                     push @{$css[-1]->{properties}}, "$prop: $value;";
                     push @{$css[-1]->{properties}}, "-webkit-$prop: $value;";
                 }
