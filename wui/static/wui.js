@@ -140,7 +140,23 @@ jQuery(function($) {
 //      Init
 // ============================================================================
 
-    $(document).ready( function() {
+    // Chrome workaround:
+    // 'bla[key=value]' doesn't refresh the screen. Must be rewritten to 'bla.attr-key-value'
+
+    if ( navigator.userAgent.toLowerCase().indexOf('chrome') >= 0 ) {
+        var oldAttrFn= $.prototype.attr;
+
+        var refreshHack= new Util.DelayedFunc(10, function() {
+            $('html').removeClass('dummy').addClass('dummy');
+        });
+
+        $.fn.attr = $.prototype.attr= function( name, value, type ) {
+            refreshHack.start();
+            return oldAttrFn.call(this, name, value, type);
+        };
+    }
+
+    $(function() {
         $('html').attr('mode', 'player');
         // fill player witch empty info
         Util.setHtml($('#player .info'), (Item.create()).itemHtml());

@@ -852,6 +852,12 @@ jQuery(function($) {
                 case 'pl-target': _playlist_tab= 'target'; break;
                 case 'pl-source': _playlist_tab= 'source'; break;
             }
+
+            // $('html').removeClass('mode-player mode-target mode-source').addClass('mode-' + _playlist_tab);
+
+            $('html').removeClass('dummy').addClass('dummy');
+
+
             $('html').attr('mode', _playlist_tab);
             updateDocumentTitle();
             clearCache();
