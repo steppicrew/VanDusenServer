@@ -1,0 +1,815 @@
+
+/* Standard CSS file for Rabak */
+
+/* Author: Dietrich Raisin, info1@raisin.de */
+/* License: see LICENSE file */
+
+// ==========================================================================
+//      Ein paar Variablen
+// ==========================================================================
+
+$input_top= 164px
+$player_height= 128px
+
+$list_top= 175px
+$list_top_player= 125px
+
+$overall_width= 500px
+$input_width= 480px
+$list_width= 480px
+$inner_list_width= 460px
+$tab_bg_color= #CCC
+$tab_bg_color= #3D80B3
+
+// ==========================================================================
+//      Allgemein
+// ==========================================================================
+
+html {
+    /*  For "4.01 Transitional"++, body inherits from html :-/.
+        As far as I understand, html[height] shouldn't even exist, but
+        apparently it does (at least in FF3) and it's default value is auto.
+    */
+    height: 100%;
+//    overflow: hidden;
+}
+
+html {
+    height: 100%;
+//    overflow: hidden;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-size: 10pt;
+    font-family: Arial, sans-serif;
+    height: 100%;
+}
+
+h1 {
+    font-size: large;
+    font-weight: bold;
+}
+
+div.item {
+    font-size: 100%;
+    font-weight: normal;
+    margin: 0;
+//    margin-top: 5px;
+    paddding: 0;
+}
+
+td {
+    vertical-align: top;
+}
+
+table.striped > tbody {
+    > tr.row1 {
+        background-color: #EEEEFF;
+    }
+    > tr.row2 {
+        background-color: #DDDDFF;
+    }
+}
+
+table.fiftyfifty > tbody > tr > td {
+    width: 50%;
+}
+
+ol, ul {
+    list-style-type: none;
+}
+
+.hidden {
+    display: none;
+}
+.show-block {
+    display: block;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+
+/*  Switch to sane box model. Without this, AFAIK there is NO way to work
+    with 100% height for layout AND using paddings + margins simultaniously.
+    Works on all proper browsers. Doesn't work with IE7, maybe with IE8...
+*/
+div {
+    -moz-box-sizing: border-box;
+    float: none;
+}
+
+a {
+    color: black;
+
+    img {
+        border: 0;
+    }
+}
+
+.clearall {
+    clear: both;
+    width: 1px;
+    height: 1px;
+}
+
+.embed, .embed embed {
+    visibility: hidden;
+    height: 1px;
+}
+
+.marquee {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#body-c {
+    position: absolute;
+
+    background-image: url(bg.png);
+
+    height: 100%;
+    width: $overall_width;
+
+    padding-bottom: 10px;
+}
+
+#body {
+    height: 100%;
+    overflow: hidden;
+    padding-bottom: $player_height;
+}
+
+#main-c {
+    position: absolute;
+    top: $list_top;
+    width: $inner_list_width;
+    bottom: 0px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-color: red;
+    margin-bottom: 10px;
+
+    background-color: #D7EBF9;
+    -moz-box-shadow: inset 0 0 6px #AAA;
+    -moz-border-radius: 5px;
+}
+
+#main {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    padding-left: 2px;
+    padding-right: 3px;
+    padding-bottom: 20px;
+    overflow: hidden;
+}
+
+.itemlist-entry {
+    border-width: 1px 0 1px;
+    border-color: #c2d4e0;
+    border-style: solid;
+    background-image: none;
+    color: #3d80b3;
+}
+.itemlist-entry.hover {
+    background-color: #e9f3f9;
+}
+.itemlist-entry.playing, .itemlist-entry.selected {
+    background-color: #3d80b3;
+    border-color: #2d5e84;
+    color: #d7ebf9;
+    .subtext {
+        color: yellow;
+    }
+}
+
+#list-player, #list-target, #list-source {
+    width: 100%;
+    height: 100%;
+    padding: 1px;
+    overflow: auto;
+    display: none;
+}
+
+// ==========================================================================
+//      container
+// ==========================================================================
+
+.container {
+    padding: 10px;
+    margin: 10px;
+    background-color: #FFF;
+    -moz-box-shadow: 0 0 6px #666;
+    -moz-border-radius: 10px;
+    width: $list_width;
+}
+
+#input {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    width: $list_width;
+}
+
+// ==========================================================================
+//      iteminfo (Inside player or itemlist)
+// ==========================================================================
+
+.itemlist-entry {
+    // border: solid 1px black;
+    height: 36px;
+    .edit {
+        cursor: pointer;
+    }
+    .timeinfo .text {
+        display: none;
+    }
+}
+
+.iteminfo {
+
+    height: 36px;
+    overflow: hidden;     // Siehe http://www.quirksmode.org/css/clearing.html
+
+    .guessed {
+        background-color: #FF8888;
+    }
+
+    .iteminfo-main {
+        margin-top: 4px;
+        margin-right: 6px;
+        margin-left: 6px;
+        height: 100%;
+    }
+
+    div > span {
+        font-weight: normal;
+    }
+    .spacing {
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .title {
+        height: 14px;
+        overflow: hidden;
+
+        .maintitle {
+            font-weight: bold;
+            font-size: 12px;
+            height: 14px;
+            overflow: hidden;
+        }
+
+        a {
+            display: inline;
+            padding: 0;
+        }
+
+        div.rating {
+            span.star1, span.star2, span.star3, span.star4, span.star5 {
+                background: url(/static/star-lo.png) no-repeat left;
+            }
+        }
+
+        div.rating.rating-value2  span.star1,
+        div.rating.rating-value3  span.star1,
+        div.rating.rating-value4  span.star1, div.rating.rating-value4  span.star2,
+        div.rating.rating-value5  span.star1, div.rating.rating-value5  span.star2,
+        div.rating.rating-value6  span.star1, div.rating.rating-value6  span.star2, div.rating.rating-value6  span.star3,
+        div.rating.rating-value7  span.star1, div.rating.rating-value7  span.star2, div.rating.rating-value7  span.star3,
+        div.rating.rating-value8  span.star1, div.rating.rating-value8  span.star2, div.rating.rating-value8  span.star3, div.rating.rating-value8  span.star4,
+        div.rating.rating-value9  span.star1, div.rating.rating-value9  span.star2, div.rating.rating-value9  span.star3, div.rating.rating-value9  span.star4,
+        div.rating.rating-value10 span.star1, div.rating.rating-value10 span.star2, div.rating.rating-value10 span.star3, div.rating.rating-value10 span.star4, div.rating.rating-value10 span.star5 {
+            background: url(/static/star-hi.png) no-repeat left;
+        }
+
+        div.rating.rating-value1 span.star1, div.rating.rating-value3 span.star2, div.rating.rating-value5 span.star3, div.rating.rating-value7 span.star4, div.rating.rating-value9 span.star5 {
+            background: url(/static/star-med.png) no-repeat left;
+        }
+
+        div.rating.rating-value1:hover span, div.rating.rating-value2:hover span, div.rating.rating-value3:hover span, div.rating.rating-value4:hover span, div.rating.rating-value5:hover span,
+        div.rating.rating-value6:hover span, div.rating.rating-value7:hover span, div.rating.rating-value8:hover span, div.rating.rating-value9:hover span, div.rating.rating-value10:hover span {
+            background: url(/static/star-lo.png) no-repeat left;
+        }
+
+        div.rating.rating-value0:hover span:hover,
+        div.rating.rating-value1:hover span:hover, div.rating.rating-value2:hover span:hover, div.rating.rating-value3:hover span:hover, div.rating.rating-value4:hover span:hover, div.rating.rating-value5:hover span:hover,
+        div.rating.rating-value6:hover span:hover, div.rating.rating-value7:hover span:hover, div.rating.rating-value8:hover span:hover, div.rating.rating-value9:hover span:hover, div.rating.rating-value10:hover span:hover {
+            background: url(/static/star-hi.png) no-repeat left;
+        }
+    }
+
+    .subtitle {
+        height: 12px;
+
+        authors {
+            overflow: hidden;
+        }
+
+        .ui-bottom, .timeinfo {
+            float: right;
+        }
+
+        .timeinfo {
+            .positioninfo, .remaininfo {
+                display: none;
+            }
+        }
+    }
+
+    .ui-left {
+        height: 100%;
+        float: left;
+    }
+    .ui-right {
+        height: 100%;
+        float: right;
+    }
+
+    .title .rating {
+        float: right;
+    }
+
+    .filename {
+        margin-right: 20px;
+    }
+
+    .subtext {
+        color: #277900;
+        font-size: 10px;
+    }
+
+    .file-no {
+        display: none;
+    }
+
+    .ui-bottom {
+        .ui-icon {
+            display: inline-block;
+        }
+        .ui-icon.hidden {
+            display: none;
+        }
+    }
+    .ui-left, .ui-bottom {
+        .ui-icon {
+            height: 13px;
+        }
+    }
+    .ui-right {
+        .ui-icon {
+            height: 11px;
+        }
+    }
+
+    .ui-right, .ui-left, .ui-bottom {
+        margin: 0;
+        padding: 0;
+
+        .ui-icon {
+            margin: -2px -3px 2px -2px;
+        }
+    }
+    .ui-right {
+        // fix for wrong positioned icon
+        .move-down .ui-icon {
+            margin: -3px -2px 2px -3px;
+            height: 13px;
+        }
+    }
+    .ui-bottom {
+        // move down locked-icon
+        .ui-icon-locked {
+            position: relative;
+            top: 6px;
+        }
+    }
+
+    .ui-icon {
+        background-image: url(css/images/ui-icons_3d80b3_256x240.png);
+    }
+}
+
+.itemlist-entry.playing, .itemlist-entry.selected {
+    .ui-icon {
+        background-image: url(css/images/ui-icons_ffffff_256x240.png);
+    }
+}
+
+// ==========================================================================
+//      Tabs
+// ==========================================================================
+
+#pl-tabs {
+
+    position: relative;
+    left: -10px;
+    top: -11px;         // 11 und nicht 10, um den weissen Blitzer wegzukriegen
+
+    padding: 5px 0;
+
+    background-color: $tab_bg_color;
+    border-bottom: 1px solid $tab_bg_color;
+
+    -moz-border-radius-topleft: 10px;
+
+    .right {
+        float: right;
+        position: relative;
+        width: 20px;
+        left: 20px;
+        top: -5px;
+        -moz-border-radius-topright: 8px;
+        padding: 5px 0;
+        background-color: $tab_bg_color;
+        border-bottom: 1px solid $tab_bg_color;
+    }
+
+    .tab {
+        padding: 3px 15px;
+        cursor: pointer;
+        position: relative;
+        top: 2px;
+        // background-color: #D7EBF9;
+        background-color: #CCC;
+        left: 4px;
+        margin-right: 1px;
+        border-bottom: 1px solid $tab_bg_color;
+    }
+
+    #pl-player {
+        -moz-border-radius-topleft: 8px;
+    }
+
+    #pl-target {
+        -moz-border-radius-topright: 8px;
+    }
+}
+
+// ==========================================================================
+//      Player
+// ==========================================================================
+
+#player, body[mode=player] {
+    .iteminfo {
+//        .ui-left, .ui-right, .ui-bottom .edit {
+        .ui-left, .ui-right {
+            display: none;
+        }
+    }
+}
+
+#player {
+    overflow: hidden;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    position: relative;
+    z-index: 1;
+
+    .iteminfo {
+
+        background-color: #ED9;
+        -moz-box-shadow: inset 0 0 6px #AAA;
+        -moz-border-radius: 5px;
+
+        .ui-bottom {
+            display: none;
+        }
+        .timeinfo {
+            font-weight: bold;
+            cursor: pointer;
+
+            .lengthinfo {
+                display: none;
+            }
+        }
+
+        .timeinfo.time-mode-position .positioninfo, .timeinfo.time-mode-remain .remaininfo, .timeinfo.time-mode-length .lengthinfo {
+            display: inline;
+        }
+
+        .file-count {
+            display: none;
+        }
+        .file-no {
+            display: inline;
+        }
+
+    }
+
+    .progress {
+        margin: 10px 10px 0;
+        font-size: 70%;
+    }
+
+    ul.playctl {
+        margin: 5px;
+        padding: 0;
+
+        li {
+            float: left;
+            cursor: pointer;
+            list-style-image: none;
+            list-style-position: outside;
+            list-style-type: none;
+            margin: 2px;
+            position: relative;
+        }
+    }
+}
+
+#player[state="stopped"] li.pause,
+#player[state="paused"] li.pause {
+    display: none;
+}
+#player[state="playing"] li.play {
+    display: none;
+}
+
+
+// ==========================================================================
+//      itemlist (Über Schieberegler gesteuert)
+// ==========================================================================
+
+#body[filter~=no_rating_0] .itemlist .itemlist-entry[rating="0"],
+#body[filter~=no_rating_1] .itemlist .itemlist-entry[rating="1"], #body[filter~=no_rating_2] .itemlist .itemlist-entry[rating="2"], #body[filter~=no_rating_3] .itemlist .itemlist-entry[rating="3"],
+#body[filter~=no_rating_4] .itemlist .itemlist-entry[rating="4"], #body[filter~=no_rating_5] .itemlist .itemlist-entry[rating="5"], #body[filter~=no_rating_6] .itemlist .itemlist-entry[rating="6"],
+#body[filter~=no_rating_7] .itemlist .itemlist-entry[rating="7"], #body[filter~=no_rating_8] .itemlist .itemlist-entry[rating="8"], #body[filter~=no_rating_9] .itemlist .itemlist-entry[rating="9"],#body[filter~=no_rating_10] .itemlist .itemlist-entry[rating="10"] {
+    display: none;
+}
+
+
+// ==========================================================================
+//      Playlisten-Auswahl und Filter
+// ==========================================================================
+
+body[mode=player] {
+    #main-c {
+        top: $list_top_player;
+    }
+    #playlistselect {
+        option.search {
+            display: none;
+        }
+    }
+    #pl-player {
+        background-color: #FFF;
+        border-bottom-color: #FFF;
+    }
+    #playlistop, #selection-op {
+        display: none;
+    }
+    #list-player {
+        display: block;
+    }
+}
+body[mode=target] {
+    #playlistselect {
+        option.virtual, option.search {
+            display: none;
+        }
+    }
+    #pl-target {
+        background-color: #FFF;
+        border-bottom-color: #FFF;
+        // z-index: 9;
+    }
+    ul#playlistop {
+        .pl-add {
+            display: none;
+        }
+    }
+    #list-target {
+        display: block;
+    }
+}
+body[mode=source] {
+    #pl-source {
+        background-color: #FFF;
+        border-bottom-color: #FFF;
+        // z-index: 9;
+    }
+    ul#playlistop {
+        .pl-new, .pl-save, .pl-rename, .pl-delete, .pl-remove {
+            display: none;
+        }
+    }
+    #list-source {
+        display: block;
+    }
+}
+
+#operation {
+    position: relative;
+    z-index: 1;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    font-size: small;
+    
+//    border: 2px solid red;
+
+    ul#playlistop {
+        margin: 5px;
+        padding: 0;
+
+        li {
+            float: left;
+            cursor: pointer;
+            list-style-image: none;
+            list-style-position: outside;
+            list-style-type: none;
+            margin: 2px;
+            padding: 4px;
+            position: relative;
+        }
+    }
+
+    select {
+        width: 100%;
+        border: 1px solid #AED0EA;
+        background-color: inherited;
+
+        option.real {
+            background-color: #CFC;
+        }
+        option.virtual {
+            background-color: #FCC;
+        }
+        option.search {
+            background-color: #CCF;
+        }
+
+        option .description {
+            margin-left: 2px;
+            font-size: 50%;
+            color: #888;
+        }
+    }
+    #filter { margin: 10px; }
+    #search_c {
+    }
+    #pl-target {
+        font-size: x-small;
+        
+        span.pl-target {
+            a {
+                font-weight: bold;
+            }
+        }
+    }
+    #selection-op {
+        font-size: x-small;
+
+        div.right {
+            float: right;
+        }
+        span {
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        span:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+
+// ==========================================================================
+//      Playlisten
+// ==========================================================================
+
+#dialog-iteminfo {
+    font-size: small;
+    
+    .info-genres {
+        text-align: center;
+        font-weight: bold;
+        padding: 0;
+    }
+    .info-head {
+        border: solid #DDFFDD 5px;
+        background-color: #DDFFDD;
+        
+        .title {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .authors {
+            font-size: smaller;
+        }
+    }
+    .info-desc {
+        padding: 5px;
+        overflow: auto;
+        font-size: smaller;
+    }
+    .info-file {
+        font-size: smaller;
+        color: #33AAAA;
+    }
+    .inactive {
+        color: #DD0000;
+    }
+}
+
+#edit-item {
+    #edit-itemdetails .edit {
+        font-size: x-small;
+
+        label { margin-left: 10px; }
+
+        .new, .new table.striped tr.row1 td             { background-color: #CCCCFF; }
+        .new table.striped tr.row2 td                   { background-color: #AAAAFF; }
+        .changed, .changed table.striped tr.row1 td     { background-color: #FFCCCC; }
+        .unchanged, .unchanged table.striped tr.row1 td { background-color: #CCFFCC; }
+        .changed table.striped tr.row2 td               { background-color: #FFAAAA; }
+        .unchanged table.striped tr.row2 td             { background-color: #AAFFAA; }
+        .guessed                                        { background-color: #FF8888; }
+
+
+        .result {
+            min-height: 200px;
+        }
+
+        .resultheader {
+            .left  { float: left; }
+            .right { float: right; }
+        }
+
+        #detailEditInfo {
+            input, textarea {
+                width: 100%;
+            }
+        }
+
+        #detailEditInfo, #detailEditHoerdat, #detailEditFiles {
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        .filelist {
+            .file {
+                clear: both;
+            }
+            .ui-icon {
+                float: left;
+                display: inline-block;
+            }
+            .disabled   { background-color: #FF8888; }
+            .edit       { background-color: #AAFFAA; }
+        }
+
+        .resultbody { clear: both; }
+    }
+}
+
+#tailbuffer {
+    height: 400px;
+    width: 100%;
+}
+
+#json-busy {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    bottom: 0;
+    border: 1px solid black;
+    background-color: #aaffaa;
+    color: red;
+    font-weight: bold;
+    padding: .5em;
+    display: none;
+    opacity: 0.8;
+    text-decoration: blink;
+    z-index: 10000;
+}
+
+body[json=busy] #json-busy {
+    display: block;
+}
+
+//:lang(de)    { quotes:"\201E" "\201C" "\201A" "\2018"; }
+//:lang(de-DE) { quotes:"\00BB" "\00AB" "\203A" "\2039"; }
+//:lang(de-CH) { quotes:"\00AB" "\00BB" "\2039" "\203A"; }
+//:lang(en)    { quotes:"\201C" "\201D" "\2018" "\2019"; }
+//:lang(fr)    { quotes:"\00AB\00A0" "\00A0\00BB" "\2039\00A0" "\00A0\203A"; }
+:lang(de-DE) { quotes:"\00AB" "\00BB" "\2039" "\203A"; }
+
+// q:before { content:open-quote; }
+// q:after { content:close-quote; }
+// q q:before { content:open-quote; }
+// q q:after { content:close-quote; }
+
+// ============================================================================
+//        EOF
+// ============================================================================
