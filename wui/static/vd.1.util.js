@@ -146,7 +146,7 @@ jQuery(function($) {
         // (to prevent racing conditions)
         var runNextPost= function() {
             if (!post_queue.length) {
-                $('body').attr('json', 'idle');
+                $('html').attr('json', 'idle');
                 return;
             }
             var post= singleCmd ? post_queue[0] : post_queue.shift();
@@ -185,7 +185,7 @@ console.log('POST RESULT', {cmd:post.cmd, result:json})
 
         return function(cmd, key, data, fn_prepare, fn_process) {
 //            key= '' + Math.random();
-            $('body').attr('json', 'busy');
+            $('html').attr('json', 'busy');
             if (!posts_data[cmd]) posts_data[cmd]= {};
             if (posts_data[cmd][key]) {
                 posts_data[cmd][key].push(fn_process);

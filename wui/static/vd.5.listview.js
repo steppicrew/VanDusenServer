@@ -852,7 +852,7 @@ jQuery(function($) {
                 case 'pl-target': _playlist_tab= 'target'; break;
                 case 'pl-source': _playlist_tab= 'source'; break;
             }
-            $('body').attr('mode', _playlist_tab);
+            $('html').attr('mode', _playlist_tab);
             updateDocumentTitle();
             clearCache();
             selectPlaylist();
@@ -1098,7 +1098,7 @@ jQuery(function($) {
             value: 0,
             slide: function(event, ui) {
                 clearCache();
-                var body= $('#body');
+                var $body= $('#body');
                 var attr= [];
                 if (ui.value === -1) {
                     attr= []
@@ -1108,7 +1108,7 @@ jQuery(function($) {
                     attr= []
                     for (var i= 1; i < ui.value; i++) attr.push('no_rating_' + i)
                 }
-                body.attr('filter', attr.join(' '));
+                $body.attr('filter', attr.join(' '));
                 onMainScroll.now();
             },
         });

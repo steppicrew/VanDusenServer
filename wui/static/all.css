@@ -456,7 +456,7 @@ a {
 //      Player
 // ==========================================================================
 
-#player, body[mode=player] {
+#player, html[mode=player] {
     .iteminfo {
 //        .ui-left, .ui-right, .ui-bottom .edit {
         .ui-left, .ui-right {
@@ -551,7 +551,7 @@ a {
 //      Playlisten-Auswahl und Filter
 // ==========================================================================
 
-body[mode=player] {
+html[mode=player] {
     #main-c {
         top: $list_top_player;
     }
@@ -571,7 +571,7 @@ body[mode=player] {
         display: block;
     }
 }
-body[mode=target] {
+html[mode=target] {
     #playlistselect {
         option.virtual, option.search {
             display: none;
@@ -591,7 +591,7 @@ body[mode=target] {
         display: block;
     }
 }
-body[mode=source] {
+html[mode=source] {
     #pl-source {
         background-color: #FFF;
         border-bottom-color: #FFF;
@@ -794,7 +794,7 @@ body[mode=source] {
     z-index: 10000;
 }
 
-body[json=busy] #json-busy {
+html[json=busy] #json-busy {
     display: block;
 }
 
