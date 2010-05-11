@@ -141,7 +141,7 @@ jQuery(function($) {
 // ============================================================================
 
     $(document).ready( function() {
-        $('body').attr('mode', 'player');
+        $('html').attr('mode', 'player');
         // fill player witch empty info
         Util.setHtml($('#player .info'), (Item.create()).itemHtml());
         Util.doJsonRequest('getglobaldata', {}, function(js_data) {
