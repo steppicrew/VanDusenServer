@@ -74,7 +74,13 @@ sub render {
                     next;
                 }
                 push @css, {context => $sContext, properties => [] } unless $css[-1]->{context} eq $sContext;
-                push @{$css[-1]->{properties}}, "$1: $2;";
+                my ($prop, $value)= ($1, $2);
+                push @{$css[-1]->{properties}}, "$prop: $value;";
+                # fix: for every "-moz"-property add the same property w/o "-moz-" and with "-webkit-"-prefix
+                if ($prop =~ s/^\-moz\-//) {
+                    push @{$css[-1]->{properties}}, "$prop: $value;";
+                    push @{$css[-1]->{properties}}, "-webkit-$prop: $value;";
+                }
                 next;
             }
             # continue to next line
