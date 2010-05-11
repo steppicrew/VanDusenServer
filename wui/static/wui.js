@@ -147,7 +147,8 @@ jQuery(function($) {
         var oldAttrFn= $.prototype.attr;
 
         var refreshHack= new Util.DelayedFunc(10, function() {
-            $('html').removeClass('dummy').addClass('dummy');
+//            $('html').removeClass('dummy').addClass('dummy');
+            $('html').removeClass('dummy');
         });
 
         $.fn.attr = $.prototype.attr= function( name, value, type ) {
@@ -157,6 +158,14 @@ jQuery(function($) {
     }
 
     $(function() {
+        $("#jquery_jplayer").jPlayer( {
+//            ready: function () {
+//                this.element.jPlayer("setFile", "mp3/elvis.mp3", "ogg/elvis.ogg"); // Defines the counterpart mp3 and ogg files
+//            },
+//            oggSupport: true,
+            swfPath: "/static/",
+        });
+
         $('html').attr('mode', 'player');
         // fill player witch empty info
         Util.setHtml($('#player .info'), (Item.create()).itemHtml());

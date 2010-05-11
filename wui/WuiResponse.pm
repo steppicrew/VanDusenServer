@@ -156,6 +156,7 @@ sub _buildPage {
         { type => 'application/javascript', src => '/static/jquery-1.3.2.min.js'},
         { type => 'application/javascript', src => '/static/jquery-ui-1.7.2.custom.min.js'},
         { type => 'application/javascript', src => '/static/jquery.marquee-0.1.js'},
+        { type => 'application/javascript', src => '/static/jquery.jplayer.min.js'},
     );
     push @scripts, { type => 'application/javascript', code => '
         (function() {
@@ -449,9 +450,7 @@ sub _indexBody {
         <div id="body-c">
             <div id="body">
                 <div class="embed">
-                    <embed type="application/x-vlc-plugin" 
-                        pluginspage="http://www.videolan.org" version="VideoLAN.VLCPlugin.2" 
-                        autoplay="true" loop="false" id="vlcplayer" />
+                    <div id="jquery_jplayer"></div>
                 </div>
                 <div id="player" class="container" state="stopped">
                     <div class="info">

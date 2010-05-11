@@ -40,7 +40,7 @@ jQuery(function($) {
     var _player_status_timeout= 1000;
     var _slider_max= 1000;
 
-    var _vlc= $('#vlcplayer')[0];
+    var _$player= $('#jquery_jplayer');
 
     var _play_button_cache= {};
 
@@ -181,8 +181,8 @@ jQuery(function($) {
         $('ul.playctl li').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
             if ($(this).hasClass('play')) {
-                if (_vlc.input.state === 4) { // PAUSED
-                    _vlc.playlist.play();
+                if (_$player.jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
+                    _$player.jPlayer('play');
                 }
                 else {
                     // requeue current file
@@ -191,18 +191,18 @@ jQuery(function($) {
                 console.debug('Play');
             }
             else if ($(this).hasClass('pause')) {
-                _vlc.playlist.togglePause();
+                _$player.jPlayer('pause');
                 console.debug('Pause');
             }
             else if ($(this).hasClass('prev')) {
                 console.debug('Prev');
                 // prev title, queue only if not playing
-                nextTitle(-1, _vlc.input.state !== 3);
+// TBD                nextTitle(-1, _$player.input.state !== 3);
             }
             else if ($(this).hasClass('next')) {
                 console.debug('Next');
                 // next title, queue only if not playing
-                nextTitle(1, _vlc.input.state !== 3);
+// TBD                nextTitle(1, _$player.input.state !== 3);
             }
             else if ($(this).hasClass('open')) {
                 Event.fire('selectPlaylist', Playlist.getPlaylist(_player_status['playlist-id'], 'create if not exists'));
@@ -244,8 +244,8 @@ jQuery(function($) {
         $('#player .progressbar').slider({
             'max': _slider_max - 1,
             'slide': function(event, ui) {
-                if (_vlc) {
-                    _vlc.input.position= ui.value / _slider_max;
+                if (_$player) {
+                    _$player.jPlayer('playHead', ui.value / _slider_max * 100);
                 }
             },
         }).slider('disable');
@@ -271,7 +271,7 @@ jQuery(function($) {
     };
 
 // ============================================================================
-//      vlc and vlc-playlist related functions
+//      player_obj and player_obj-playlist related functions
 // ============================================================================
 
     // queues new item
@@ -305,11 +305,9 @@ jQuery(function($) {
         var file= item.get('play_files')[_item_file_index];
         if (!file) return false;
 
-        _vlc.playlist.items.clear();
-        var vlc_item= _vlc.playlist.add(_base_url + file.get('url'));
-//        vlc_item= _vlc.playlist.add(_base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3');
-
-        _vlc.playlist.playItem(vlc_item);
+        _$player.jPlayer('setFile', _base_url + file.get('url'));
+//        _$player.jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3');
+        _$player.jPlayer('play')
         playerStatusTimer.start();
 
         file.updateLastPlayed(function() {
@@ -320,8 +318,7 @@ jQuery(function($) {
     };
 
     var stop= function() {
-        _vlc.playlist.items.clear();
-        _vlc.playlist.stop();
+        _$player.jPlayer('clearFile');
 
         _item_uid= null;
         _item_file_index= -1;
@@ -371,10 +368,12 @@ jQuery(function($) {
         return function() {
 
             var updateProgress= function() {
-                $progressbar.slider('value', _vlc.input.position * _slider_max)
-                Util.setHtml($('#player .position'), Util.formatTime(_vlc.input.time / 1000));
-                Util.setHtml($('#player .length'),   Util.formatTime(_vlc.input.length / 1000));
-                Util.setHtml($('#player .remain'),   Util.formatTime((_vlc.input.length - _vlc.input.time) / 1000));
+                $progressbar.slider('value', _$player.jPlayer('getData', 'diag.playedPercentAbsolute') / 100 * _slider_max)
+                var curTime= _$player.jPlayer('getData', 'diag.playedTime')
+                var lenTime= _$player.jPlayer('getData', 'diag.totalTime')
+                Util.setHtml($('#player .position'), Util.formatTime(curTime / 1000));
+                Util.setHtml($('#player .length'),   Util.formatTime(lenTime / 1000));
+                Util.setHtml($('#player .remain'),   Util.formatTime((lenTime - curTime) / 1000));
             };
             var enable_progress= function(enable) {
                 if (enable){
@@ -386,67 +385,58 @@ jQuery(function($) {
                 progressbar_disabled= !enable;
             }
 
-            switch (_vlc.input.state) {
-                case 3: // PLAYING
-                    $player.attr('state', 'playing');
-                    enable_progress(true);
-                    break;
-
-                case 4: // PAUSED
-                    $player.attr('state', 'paused');
-                    enable_progress(true);
-                    break;
-
-                case 0: // IDLE
-                case 6: // ENDED
-                    var was_playing= $player.attr('state') === 'playing';
-                    if (!was_playing) {
-                        $player.attr('state', 'stopped');
-                        Event.fire('activeItemChanged');
-                    }
-                    if (_item_uid) {
-                        var play_next= false;
-                        if (was_playing) {
-                            if (_player_status['stop-after']) {
-                                // try to get next playable file of the same item
-                                var item= getItem(_item_uid);
-                                if (item) play_next= item.get('play_files').length > _item_file_index + 1;
-                            }
-                            else {
-                                play_next= true;
-                            }
-                        }
-                        if (play_next) {
-                            nextTitle(1);
+            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
+                $player.attr('state', 'playing');
+                enable_progress(true);
+            }
+            else if (_$player.jPlayer('getData', 'diag.playedTime') > 0) {
+                $player.attr('state', 'paused');
+                enable_progress(true);
+            }
+            else {
+                var was_playing= $player.attr('state') === 'playing';
+                if (!was_playing) {
+                    $player.attr('state', 'stopped');
+                    Event.fire('activeItemChanged');
+                }
+                if (_item_uid) {
+                    var play_next= false;
+                    if (was_playing) {
+                        if (_player_status['stop-after']) {
+                            // try to get next playable file of the same item
+                            var item= getItem(_item_uid);
+                            if (item) play_next= item.get('play_files').length > _item_file_index + 1;
                         }
                         else {
-                            // on "stop-after" requeue current item
-                            queue(_item_uid);
-                            $progressbar.slider('value', 0);
-                            $player.attr('state', 'paused');
+                            play_next= true;
                         }
                     }
-                    enable_progress(false);
-                    break;
+                    if (play_next) {
+                        nextTitle(1);
+                    }
+                    else {
+                        // on "stop-after" requeue current item
+                        queue(_item_uid);
+                        $progressbar.slider('value', 0);
+                        $player.attr('state', 'paused');
+                    }
+                }
+                enable_progress(false);
             }
             Util.forEach(_play_buttons, function(button) {
                 var $b= _play_button_cache[button];
                 if ($b.hasClass('ui-state-disabled')) {
-                    if (_vlc.playlist.items.count) $b.removeClass('ui-state-disabled');
+                    if (_$player.jPlayer('getData', 'diag.src')) $b.removeClass('ui-state-disabled');
                 }
                 else {
-                    if (!_vlc.playlist.items.count) $b.addClass('ui-state-disabled');
+                    if (!_$player.jPlayer('getData', 'src')) $b.addClass('ui-state-disabled');
                 }
             });
 
             // queue next timer event if playing
-            switch (_vlc.input.state) {
-                case 1: // OPENING
-                case 2: // BUFFERING
-                case 3: // PLAYING
-                    updateProgress();
-                    playerStatusTimer.start();
-                    break;
+            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
+                updateProgress();
+                playerStatusTimer.start();
             }
         };
     })();
