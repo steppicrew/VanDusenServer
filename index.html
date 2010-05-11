@@ -1,0 +1,30 @@
+<html>
+    <body>
+        <h1>Overview</h1>
+        <p>
+            This is a collection of scripts I use to manage all of my radio plays, add tags with additional information to them (like author, director, description, artists etc.) and provide a web-frontend to play plays and organize playlists.
+        </p>
+        <p>
+            It's written in a mix of script languages (mostly to leran python, but resulting in multiple implementation of stuff in both, python and perl).
+        </p>
+        <p>
+            There are two main purposes of this script collections:
+            <ol>
+                <li>
+                    The python-scripts in directory <code>Python</code> try to keep your hard disc in sync with any files on a (read-only) ftp-server.<br />
+                    You can specify a list of files or directories to ignore when syncing.<br />
+                    It detects identical files and hard-links those files to save disc space. It tries to detect renamed files on the ftp-site and creates hard links as well and deletes renamed files, if they don't exist on the ftp-site anymore.<br />
+                    The main goal is to keep as much data as possible - but use no more space than needed (Files are never deleted - only overwritten if there it was updated on the ftp-server).<br />
+                </li>
+                <li>
+                    The perl and js scripts reside in directory <code>wui</code> (web user interface) and provide a simple web server and some js files to be run at the client.<br />
+                </li>
+            </ol>
+        </p>
+        <h1>Installation</h1>
+        <p>
+            I tried to keep the configuration in separate files (mostly to prevent my ftp-credentials from being published).<br />
+            You should find sample configuration files in <code>Python/Config.py.sample</code> and <code>wui/wui.conf.sample</code>. Copy both files to the same directory by removing the <code>.sample</code> extension and make apropriate changes. That should be all needed...
+        </p>
+    </body>
+</html>
