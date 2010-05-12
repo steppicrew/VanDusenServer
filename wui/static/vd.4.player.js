@@ -181,7 +181,7 @@ jQuery(function($) {
         $("#jquery_jplayer").jPlayer( {
             ready: function () {
                 this.element.jPlayer("volumeMax")
-                .jPlayer("onSoundComplete", function() {updatePlayerStatus('stopped')});
+                .jPlayer("onSoundComplete", playerStopped);
             },
 //            oggSupport: true,
             swfPath: "/static/",
@@ -369,13 +369,67 @@ jQuery(function($) {
         }
     }
 
+    var enableProgressBar= (function() {
+        var progressbar_disabled= true;
+        var $progressbar=       $('#player .progressbar');
+
+        return function(enable) {
+            if (enable){
+                if (progressbar_disabled) $progressbar.slider('enable');
+            }
+            else {
+                if (!progressbar_disabled) $progressbar.slider('disable');
+            }
+            progressbar_disabled= !enable;
+        }
+    })();
+
+    var playerStopped= function() {
+        var $player=            $('#player');
+
+        var was_playing= $player.attr('state') === 'playing';
+        if (!was_playing) {
+            $player.attr('state', 'stopped');
+            Event.fire('activeItemChanged');
+        }
+        if (_item_uid) {
+            var play_next= false;
+            if (was_playing) {
+                if (_player_status['stop-after']) {
+                    // try to get next playable file of the same item
+                    var item= getItem(_item_uid);
+                    if (item) play_next= item.get('play_files').length > _item_file_index + 1;
+                }
+                else {
+                    play_next= true;
+                }
+            }
+            if (play_next) {
+                nextTitle(1);
+            }
+            else {
+                // on "stop-after" requeue current item
+                queue(_item_uid);
+                $progressbar.slider('value', 0);
+                $player.attr('state', 'paused');
+            }
+        }
+
+        Util.forEach(_play_buttons, function(button) {
+            var $b= _play_button_cache[button];
+            if (! $b.hasClass('ui-state-disabled')) {
+                $b.addClass('ui-state-disabled');
+            }
+        });
+        enableProgressBar(false);
+    }
+
     // update buttons of play ctrl
     var updatePlayerStatus= (function() {
         var $player=            $('#player');
         var $progressbar=       $('#player .progressbar');
-        var progressbar_disabled= true;
 
-        return function(stopped) {
+        return function() {
 
             var updateProgress= function() {
                 $progressbar.slider('value', _$player.jPlayer('getData', 'diag.playedPercentAbsolute') / 100 * _slider_max)
@@ -385,65 +439,23 @@ jQuery(function($) {
                 Util.setHtml($('#player .length'),   Util.formatTime(lenTime / 1000));
                 Util.setHtml($('#player .remain'),   Util.formatTime((lenTime - curTime) / 1000));
             };
-            var enable_progress= function(enable) {
-                if (enable){
-                    if (progressbar_disabled) $progressbar.slider('enable');
-                }
-                else {
-                    if (!progressbar_disabled) $progressbar.slider('disable');
-                }
-                progressbar_disabled= !enable;
-            }
 
 // console.log('diag.isPlaying', _$player.jPlayer('getData', 'diag.isPlaying'))
 // console.log('diag.playedTime', _$player.jPlayer('getData', 'diag.playedTime'))
 // console.log('diag.src', _$player.jPlayer('getData', 'diag.src'))
-            if (stopped) {
-                var was_playing= $player.attr('state') === 'playing';
-                if (!was_playing) {
-                    $player.attr('state', 'stopped');
-                    Event.fire('activeItemChanged');
-                }
-                if (_item_uid) {
-                    var play_next= false;
-                    if (was_playing) {
-                        if (_player_status['stop-after']) {
-                            // try to get next playable file of the same item
-                            var item= getItem(_item_uid);
-                            if (item) play_next= item.get('play_files').length > _item_file_index + 1;
-                        }
-                        else {
-                            play_next= true;
-                        }
-                    }
-                    if (play_next) {
-                        nextTitle(1);
-                    }
-                    else {
-                        // on "stop-after" requeue current item
-                        queue(_item_uid);
-                        $progressbar.slider('value', 0);
-                        $player.attr('state', 'paused');
-                    }
-                }
-                enable_progress(false);
-            }
-            else if (_$player.jPlayer('getData', 'diag.isPlaying')) {
+            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
                 $player.attr('state', 'playing');
-                enable_progress(true);
+                enableProgressBar(true);
             }
             else if (_$player.jPlayer('getData', 'diag.playedTime') > 0) {
                 $player.attr('state', 'paused');
-                enable_progress(true);
+                enableProgressBar(true);
             }
 
             Util.forEach(_play_buttons, function(button) {
                 var $b= _play_button_cache[button];
                 if ($b.hasClass('ui-state-disabled')) {
-                    if (!stopped) $b.removeClass('ui-state-disabled');
-                }
-                else {
-                    if (stopped) $b.addClass('ui-state-disabled');
+                    $b.removeClass('ui-state-disabled');
                 }
             });
 
