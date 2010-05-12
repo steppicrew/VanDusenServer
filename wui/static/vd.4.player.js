@@ -40,8 +40,6 @@ jQuery(function($) {
     var _player_status_timeout= 1000;
     var _slider_max= 1000;
 
-    var _$player= $('#jquery_jplayer');
-
     var _play_button_cache= {};
 
     // add regular play buttons (play, prev, next...)
@@ -52,6 +50,33 @@ jQuery(function($) {
         if (type !== 'button') return // continue
         _play_button_cache[button]= $('.playctl .' + button);
     })
+
+    // wrapper for jPlayer calls to respect jPlayer.ready() function
+    // queues all calls to player before ready() was called
+    var jPlayer= (function() {
+        var $player= $('#jquery_jplayer')
+        var _jPlayer= $player.jPlayer
+        var fnQueue= []
+        var ready= false
+
+        return function() {
+console.log('jPlayer', arguments)
+            if (ready) return _jPlayer.apply($player, arguments)
+            var type= arguments[0]
+            if (type === 'ready') {
+                ready= true
+                while (true) {
+                    var fnData= fnQueue.shift()
+                    if (fnData === undefined) break;
+                    _jPlayer.apply($player, fnData)
+                }
+                return $player
+            }
+            if (type === 'getData') return undefined
+            fnQueue.push(arguments)
+        }
+    })()
+
 
     var getItem= function(uid) {
         if (_playlist) return _playlist.getItem(uid);
@@ -180,19 +205,22 @@ jQuery(function($) {
         // initialize player
         $("#jquery_jplayer").jPlayer( {
             ready: function () {
-                this.element.jPlayer("volumeMax")
-                .jPlayer("onSoundComplete", playerStopped);
+                jPlayer('ready')
+                jPlayer('volumeMax')
+                jPlayer('onSoundComplete', playerStopped)
+                jPlayer('onProgressChange', playerProgress)
+                this.element.css('display', 'block')
             },
 //            oggSupport: true,
-            swfPath: "/static/",
-        });
+            swfPath: '/static/',
+        })
 
         // manage player's buttons
         $('ul.playctl li').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
             if ($(this).hasClass('play')) {
-                if (_$player.jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
-                    _$player.jPlayer('play');
+                if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
+                    jPlayer('play');
                 }
                 else {
                     // requeue current file
@@ -201,18 +229,18 @@ jQuery(function($) {
                 console.debug('Play');
             }
             else if ($(this).hasClass('pause')) {
-                _$player.jPlayer('pause');
+                jPlayer('pause');
                 console.debug('Pause');
             }
             else if ($(this).hasClass('prev')) {
                 console.debug('Prev');
-                // prev title, queue only if not playing
-// TBD                nextTitle(-1, _$player.input.state !== 3);
+                // prev title, queue_only if not playing
+                nextTitle(-1, !jPlayer('getData', 'diag.isPlaying'));
             }
             else if ($(this).hasClass('next')) {
                 console.debug('Next');
-                // next title, queue only if not playing
-// TBD                nextTitle(1, _$player.input.state !== 3);
+                // next title, queue_only if not playing
+                nextTitle(1, !jPlayer('getData', 'diag.isPlaying'));
             }
             else if ($(this).hasClass('open')) {
                 Event.fire('selectPlaylist', Playlist.getPlaylist(_player_status['playlist-id'], 'create if not exists'));
@@ -231,7 +259,7 @@ jQuery(function($) {
                     }
                 })
             }
-            playerStatusTimer.start();
+            playerStatusTimer.start()
             return false;
         });
 
@@ -254,9 +282,7 @@ jQuery(function($) {
         $('#player .progressbar').slider({
             'max': _slider_max - 1,
             'slide': function(event, ui) {
-                if (_$player) {
-                    _$player.jPlayer('playHead', ui.value / _slider_max * 100);
-                }
+                jPlayer('playHead', ui.value / _slider_max * 100);
             },
         }).slider('disable');
 
@@ -315,20 +341,20 @@ jQuery(function($) {
         var file= item.get('play_files')[_item_file_index];
         if (!file) return false;
 
-        _$player.jPlayer('setFile', _base_url + file.get('url'));
-//        _$player.jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3');
-        _$player.jPlayer('play')
-        playerStatusTimer.start();
+        jPlayer('setFile', _base_url + file.get('url'));
+//        jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3');
+        jPlayer('play')
 
         file.updateLastPlayed(function() {
             item.invalidateDetails();
             updateFileNum();
         });
+        playerStatusTimer.start()
         return true;
     };
 
     var stop= function() {
-        _$player.jPlayer('clearFile');
+        jPlayer('clearFile');
 
         _item_uid= null;
         _item_file_index= -1;
@@ -393,26 +419,26 @@ jQuery(function($) {
             Event.fire('activeItemChanged');
         }
         if (_item_uid) {
-            var play_next= false;
+            var play_next= false
             if (was_playing) {
                 if (_player_status['stop-after']) {
                     // try to get next playable file of the same item
                     var item= getItem(_item_uid);
-                    if (item) play_next= item.get('play_files').length > _item_file_index + 1;
+                    if (item && item.get('play_files').length > _item_file_index + 1) {
+                        nextTitle(1)
+                        return
+                    }
                 }
                 else {
-                    play_next= true;
+                    nextTitle(1)
+                    return
                 }
             }
-            if (play_next) {
-                nextTitle(1);
-            }
-            else {
-                // on "stop-after" requeue current item
-                queue(_item_uid);
-                $progressbar.slider('value', 0);
-                $player.attr('state', 'paused');
-            }
+            // on "stop-after" requeue current item
+            queue(_item_uid)
+            $player.attr('state', 'paused')
+            jPlayer('stop')
+            playerStatusTimer.start()
         }
 
         Util.forEach(_play_buttons, function(button) {
@@ -421,51 +447,56 @@ jQuery(function($) {
                 $b.addClass('ui-state-disabled');
             }
         });
+
         enableProgressBar(false);
     }
 
-    // update buttons of play ctrl
-    var updatePlayerStatus= (function() {
-        var $player=            $('#player');
-        var $progressbar=       $('#player .progressbar');
+    var playerProgress= (function() {
+        var $progressbar= $('#player .progressbar')
+        var lastData= {}
 
-        return function() {
-
-            var updateProgress= function() {
-                $progressbar.slider('value', _$player.jPlayer('getData', 'diag.playedPercentAbsolute') / 100 * _slider_max)
-                var curTime= _$player.jPlayer('getData', 'diag.playedTime')
-                var lenTime= _$player.jPlayer('getData', 'diag.totalTime')
-                Util.setHtml($('#player .position'), Util.formatTime(curTime / 1000));
-                Util.setHtml($('#player .length'),   Util.formatTime(lenTime / 1000));
-                Util.setHtml($('#player .remain'),   Util.formatTime((lenTime - curTime) / 1000));
-            };
-
-// console.log('diag.isPlaying', _$player.jPlayer('getData', 'diag.isPlaying'))
-// console.log('diag.playedTime', _$player.jPlayer('getData', 'diag.playedTime'))
-// console.log('diag.src', _$player.jPlayer('getData', 'diag.src'))
-            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
-                $player.attr('state', 'playing');
-                enableProgressBar(true);
-            }
-            else if (_$player.jPlayer('getData', 'diag.playedTime') > 0) {
-                $player.attr('state', 'paused');
-                enableProgressBar(true);
+        return function(loadPercent, playedPercentRel, playedPercentAbs, timePlayed, timeTotal) {
+            var curData= {
+                position: parseInt(timePlayed / 1000),
+                length:   parseInt(timeTotal / 1000),
+                remain:   parseInt((timeTotal - timePlayed) / 1000),
             }
 
-            Util.forEach(_play_buttons, function(button) {
-                var $b= _play_button_cache[button];
-                if ($b.hasClass('ui-state-disabled')) {
-                    $b.removeClass('ui-state-disabled');
+            var updated= false
+
+            Util.forEach(
+                curData,
+                function(value, key) {
+                    if (value === lastData[key]) return
+                    Util.setHtml($('#player .' + key), Util.formatTime(value))
+                    lastData[key]= value
+                    updated= true
                 }
-            });
+            )
 
-            // queue next timer event if playing
-            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
-                updateProgress();
-                playerStatusTimer.start();
-            }
-        };
+            if (updated) $progressbar.slider('value', playedPercentAbs / 100 * _slider_max)
+        }
     })();
+
+
+    // update buttons of play ctrl
+    var updatePlayerStatus= function() {
+        if (jPlayer('getData', 'diag.isPlaying')) {
+            $('#player').attr('state', 'playing');
+            enableProgressBar(true);
+        }
+        else if (jPlayer('getData', 'diag.playedTime') > 0) {
+            $('#player').attr('state', 'paused');
+            enableProgressBar(true);
+        }
+
+        Util.forEach(_play_buttons, function(button) {
+            var $b= _play_button_cache[button];
+            if ($b.hasClass('ui-state-disabled')) {
+                $b.removeClass('ui-state-disabled');
+            }
+        })
+    }
 
     // start timer for update player status
     var playerStatusTimer= new Util.DelayedFunc(_player_status_timeout, updatePlayerStatus);
