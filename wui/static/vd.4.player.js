@@ -60,7 +60,7 @@ jQuery(function($) {
         var ready= false
 
         return function() {
-console.log('jPlayer', arguments)
+            // console.log('jPlayer', arguments)
             if (ready) return _jPlayer.apply($player, arguments)
             var type= arguments[0]
             if (type === 'ready') {
@@ -209,7 +209,6 @@ console.log('jPlayer', arguments)
                 jPlayer('volumeMax')
                 jPlayer('onSoundComplete', playerStopped)
                 jPlayer('onProgressChange', playerProgress)
-                this.element.css('display', 'block')
             },
 //            oggSupport: true,
             swfPath: '/static/',
@@ -464,15 +463,12 @@ console.log('jPlayer', arguments)
 
             var updated= false
 
-            Util.forEach(
-                curData,
-                function(value, key) {
-                    if (value === lastData[key]) return
-                    Util.setHtml($('#player .' + key), Util.formatTime(value))
-                    lastData[key]= value
-                    updated= true
-                }
-            )
+            for (var key in curData) {
+                if (curData[key] === lastData[key]) continue
+                Util.setHtml($('#player .' + key), Util.formatTime(curData[key]))
+                updated= true
+            }
+            lastData= curData
 
             if (updated) $progressbar.slider('value', playedPercentAbs / 100 * _slider_max)
         }

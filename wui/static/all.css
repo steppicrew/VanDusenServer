@@ -780,10 +780,6 @@ html[mode=source] {
     }
 }
 
-#jquery_jplayer {
-    display:none; /* Kills jPlayer when using Flash */
-}
-
 #tailbuffer {
     height: 400px;
     width: 100%;

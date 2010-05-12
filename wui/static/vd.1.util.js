@@ -150,7 +150,7 @@ jQuery(function($) {
                 return;
             }
             var post= singleCmd ? post_queue[0] : post_queue.shift();
-console.log('POST', post.cmd, post.data)
+// console.log('POST', post.cmd, post.data)
             $.ajax({
                 type: 'POST',
                 url: '#',
@@ -161,7 +161,7 @@ console.log('POST', post.cmd, post.data)
                 },
                 dataType: 'json',
                 success: function(json) {
-console.log('POST RESULT', {cmd:post.cmd, result:json})
+// console.log('POST RESULT', {cmd:post.cmd, result:json})
                     if (post.fn_prepare) json= post.fn_prepare(json);
                     var fns= posts_data[post.cmd][post.key];
                     forEach(fns, function(fn) {if (fn) fn(json)});
