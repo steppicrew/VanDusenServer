@@ -177,6 +177,16 @@ jQuery(function($) {
     }
 
     var _init= function() {
+        // initialize player
+        $("#jquery_jplayer").jPlayer( {
+            ready: function () {
+                this.element.jPlayer("volumeMax")
+                .jPlayer("onSoundComplete", function() {updatePlayerStatus('stopped')});
+            },
+//            oggSupport: true,
+            swfPath: "/static/",
+        });
+
         // manage player's buttons
         $('ul.playctl li').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
@@ -365,7 +375,7 @@ jQuery(function($) {
         var $progressbar=       $('#player .progressbar');
         var progressbar_disabled= true;
 
-        return function() {
+        return function(stopped) {
 
             var updateProgress= function() {
                 $progressbar.slider('value', _$player.jPlayer('getData', 'diag.playedPercentAbsolute') / 100 * _slider_max)
@@ -385,15 +395,10 @@ jQuery(function($) {
                 progressbar_disabled= !enable;
             }
 
-            if (_$player.jPlayer('getData', 'diag.isPlaying')) {
-                $player.attr('state', 'playing');
-                enable_progress(true);
-            }
-            else if (_$player.jPlayer('getData', 'diag.playedTime') > 0) {
-                $player.attr('state', 'paused');
-                enable_progress(true);
-            }
-            else {
+// console.log('diag.isPlaying', _$player.jPlayer('getData', 'diag.isPlaying'))
+// console.log('diag.playedTime', _$player.jPlayer('getData', 'diag.playedTime'))
+// console.log('diag.src', _$player.jPlayer('getData', 'diag.src'))
+            if (stopped) {
                 var was_playing= $player.attr('state') === 'playing';
                 if (!was_playing) {
                     $player.attr('state', 'stopped');
@@ -423,13 +428,22 @@ jQuery(function($) {
                 }
                 enable_progress(false);
             }
+            else if (_$player.jPlayer('getData', 'diag.isPlaying')) {
+                $player.attr('state', 'playing');
+                enable_progress(true);
+            }
+            else if (_$player.jPlayer('getData', 'diag.playedTime') > 0) {
+                $player.attr('state', 'paused');
+                enable_progress(true);
+            }
+
             Util.forEach(_play_buttons, function(button) {
                 var $b= _play_button_cache[button];
                 if ($b.hasClass('ui-state-disabled')) {
-                    if (_$player.jPlayer('getData', 'diag.src')) $b.removeClass('ui-state-disabled');
+                    if (!stopped) $b.removeClass('ui-state-disabled');
                 }
                 else {
-                    if (!_$player.jPlayer('getData', 'src')) $b.addClass('ui-state-disabled');
+                    if (stopped) $b.addClass('ui-state-disabled');
                 }
             });
 
