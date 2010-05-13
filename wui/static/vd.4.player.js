@@ -220,6 +220,7 @@ jQuery(function($) {
             if ($(this).hasClass('play')) {
                 if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
                     jPlayer('play');
+                    playerStatusTimer.now()
                 }
                 else {
                     // requeue current file
@@ -229,6 +230,7 @@ jQuery(function($) {
             }
             else if ($(this).hasClass('pause')) {
                 jPlayer('pause');
+                playerStatusTimer.now()
                 console.debug('Pause');
             }
             else if ($(this).hasClass('prev')) {
@@ -258,7 +260,6 @@ jQuery(function($) {
                     }
                 })
             }
-            playerStatusTimer.start()
             return false;
         });
 
@@ -437,7 +438,7 @@ jQuery(function($) {
             queue(_item_uid)
             $player.attr('state', 'paused')
             jPlayer('stop')
-            playerStatusTimer.start()
+            playerStatusTimer.now()
         }
 
         Util.forEach(_play_buttons, function(button) {
