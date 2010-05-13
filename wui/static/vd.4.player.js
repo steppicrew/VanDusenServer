@@ -220,17 +220,19 @@ jQuery(function($) {
             if ($(this).hasClass('play')) {
                 if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
                     jPlayer('play');
-                    playerStatusTimer.now()
+                    console.debug('Play (unpaused)');
                 }
                 else {
                     // requeue current file
                     playFile();
+                    console.debug('Play');
                 }
-                console.debug('Play');
+                $('#player').attr('state', 'playing');
+                playerStarted()
             }
             else if ($(this).hasClass('pause')) {
                 jPlayer('pause');
-                playerStatusTimer.now()
+                $('#player').attr('state', 'paused');
                 console.debug('Pause');
             }
             else if ($(this).hasClass('prev')) {
@@ -325,6 +327,7 @@ jQuery(function($) {
                 Event.fire('updatedItem', item);
                 Util.setHtml($('#player .info'), item.itemHtml());
                 updateFileNum();
+                playerStarted()
             }
         );
         _play_button_cache.play.removeClass('ui-state-disabled');
@@ -349,7 +352,7 @@ jQuery(function($) {
             item.invalidateDetails();
             updateFileNum();
         });
-        playerStatusTimer.start()
+        $('#player').attr('state', 'playing');
         return true;
     };
 
@@ -410,14 +413,32 @@ jQuery(function($) {
         }
     })();
 
+    var playerStarted= function() {
+        enableProgressBar(true);
+        Util.forEach(_play_buttons, function(button) {
+            var $b= _play_button_cache[button];
+            if ($b.hasClass('ui-state-disabled')) {
+                $b.removeClass('ui-state-disabled');
+            }
+        })
+    }
+
     var playerStopped= function() {
         var $player=            $('#player');
 
         var was_playing= $player.attr('state') === 'playing';
-        if (!was_playing) {
-            $player.attr('state', 'stopped');
-            Event.fire('activeItemChanged');
-        }
+
+        $player.attr('state', 'stopped');
+        Event.fire('activeItemChanged');
+
+        enableProgressBar(false);
+        Util.forEach(_play_buttons, function(button) {
+            var $b= _play_button_cache[button];
+            if (! $b.hasClass('ui-state-disabled')) {
+                $b.addClass('ui-state-disabled');
+            }
+        });
+
         if (_item_uid) {
             var play_next= false
             if (was_playing) {
@@ -437,18 +458,9 @@ jQuery(function($) {
             // on "stop-after" requeue current item
             queue(_item_uid)
             $player.attr('state', 'paused')
-            jPlayer('stop')
-            playerStatusTimer.now()
+            return
         }
 
-        Util.forEach(_play_buttons, function(button) {
-            var $b= _play_button_cache[button];
-            if (! $b.hasClass('ui-state-disabled')) {
-                $b.addClass('ui-state-disabled');
-            }
-        });
-
-        enableProgressBar(false);
     }
 
     var playerProgress= (function() {
@@ -474,29 +486,6 @@ jQuery(function($) {
             if (updated) $progressbar.slider('value', playedPercentAbs / 100 * _slider_max)
         }
     })();
-
-
-    // update buttons of play ctrl
-    var updatePlayerStatus= function() {
-        if (jPlayer('getData', 'diag.isPlaying')) {
-            $('#player').attr('state', 'playing');
-            enableProgressBar(true);
-        }
-        else if (jPlayer('getData', 'diag.playedTime') > 0) {
-            $('#player').attr('state', 'paused');
-            enableProgressBar(true);
-        }
-
-        Util.forEach(_play_buttons, function(button) {
-            var $b= _play_button_cache[button];
-            if ($b.hasClass('ui-state-disabled')) {
-                $b.removeClass('ui-state-disabled');
-            }
-        })
-    }
-
-    // start timer for update player status
-    var playerStatusTimer= new Util.DelayedFunc(_player_status_timeout, updatePlayerStatus);
 
 // ============================================================================
 //      Init and Exports
