@@ -516,8 +516,8 @@ jQuery(function($) {
         if (file) file.setExtendedDetails(
             data,
             function(items) {
-                replaceItemsListEntry(uid, items);
-                if (items[0].get('uid') !== uid || items.length > 1) $('#edit-item').dialog('close');
+                replaceItemsListEntry(uid, items)
+                if (items.length === 0 || items[0].get('uid') !== uid || items.length > 1) $('#edit-item').dialog('close');
             }
         );
     };
