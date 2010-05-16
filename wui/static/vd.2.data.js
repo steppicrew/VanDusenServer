@@ -554,7 +554,7 @@ jQuery(function($) {
                     'data': details,
                 }),
                 function(json) {
-                    Util.map(json.items, function(i) {
+                    return Util.map(json.items, function(i) {
                         var item= VD.Item.create(i);
                         Event.fire('updatedItem', item);
                         return item;
@@ -570,6 +570,7 @@ jQuery(function($) {
                 {
                     'md5': me.text('md5'),
                 },
+                null,
                 fn
             );
         };
@@ -669,6 +670,7 @@ jQuery(function($) {
                 me.addIdParams({
                     'order': data,
                 }),
+                null,
                 function(data) {
                     if (data.error) {
                         console.error(data.error);
@@ -782,6 +784,7 @@ jQuery(function($) {
                 me.addIdParams({
                     'newname': newname,
                 }),
+                null,
                 function(data) {
                     if (data.ok) {
                         me.set('name', newname);
@@ -799,6 +802,7 @@ jQuery(function($) {
             if (me.get('playlist_type') !== 'real') return;
             Util.doJsonRequest('delete-playlist',
                 me.addIdParams(),
+                null,
                 function(data) {
                     if (data.ok) {
                         if (fn) fn();
@@ -850,6 +854,7 @@ jQuery(function($) {
                 me.addIdParams({
                     'plays': play_ids,
                 }),
+                null,
                 function(data) {
                     if (data.ok) {
                         return _finish();
@@ -890,6 +895,7 @@ jQuery(function($) {
                 me.addIdParams({
                     'plays': play_ids,
                 }),
+                null,
                 function(data) {
                     if (data.ok) {
                         return _finish();
@@ -925,6 +931,7 @@ jQuery(function($) {
             {
                 'name': name,
             },
+            null,
             function(data) {
                 if (data.ok) {
                     if (fn) fn(VD.Item.create(data.playlist));

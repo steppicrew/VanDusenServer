@@ -453,6 +453,7 @@ jQuery(function($) {
                 'author_name': author_name,
                 'author_given_name': author_given
             },
+            null,
             function(js_data) {
                 $(result).empty();
                 if (js_data.length === 0) {

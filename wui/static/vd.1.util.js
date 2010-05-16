@@ -139,6 +139,8 @@ jQuery(function($) {
         var posts_data= {};
         var post_queue= [];
 
+        var log= false // || true
+
         // set this to true if only one request should be running at a time
         var singleCmd= true;
 
@@ -150,7 +152,7 @@ jQuery(function($) {
                 return;
             }
             var post= singleCmd ? post_queue[0] : post_queue.shift();
-// console.log('POST', post.cmd, post.data)
+            if (log) console.log('POST', post.cmd, post.data)
             $.ajax({
                 type: 'POST',
                 url: '#',
@@ -161,7 +163,7 @@ jQuery(function($) {
                 },
                 dataType: 'json',
                 success: function(json) {
-// console.log('POST RESULT', {cmd:post.cmd, result:json})
+                    if (log) console.log('POST RESULT', {cmd:post.cmd, result:json})
                     if (post.fn_prepare) json= post.fn_prepare(json);
                     var fns= posts_data[post.cmd][post.key];
                     forEach(fns, function(fn) {if (fn) fn(json)});

@@ -161,19 +161,24 @@ jQuery(function($) {
         $('html').attr('mode', 'player');
         // fill player witch empty info
         Util.setHtml($('#player .info'), (Item.create()).itemHtml());
-        Util.doJsonRequest('getglobaldata', {}, function(js_data) {
-            Listview.initWui(
-                {
-                    source: js_data['last-playlist-id'],
-                },
-                function() {return Player.setup(
-                    js_data['player-status'],
-                    js_data.baseurl,
-                    function(id) {return Playlist.getPlaylist(id, 'create if not exists')},
-                    Util.loadPlaylist
-                )}
-            );
-        });
+        Util.doJsonRequest(
+            'getglobaldata',
+            {},
+            null,
+            function(js_data) {
+                Listview.initWui(
+                    {
+                        source: js_data['last-playlist-id'],
+                    },
+                    function() {return Player.setup(
+                        js_data['player-status'],
+                        js_data.baseurl,
+                        function(id) {return Playlist.getPlaylist(id, 'create if not exists')},
+                        Util.loadPlaylist
+                    )}
+                )
+            }
+        )
         // catch spaces to toggle play/pause
         $('html').keydown(function(e) {
             if (e.keyCode === 32) {
