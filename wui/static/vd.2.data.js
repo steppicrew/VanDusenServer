@@ -380,6 +380,20 @@ jQuery(function($) {
             return content.render()
         }
 
+        var sortKey= function(markChanged) {
+            var result= {
+                uid:        text('uid'),
+                sort_text:  text('sort_text'),
+                sort_pos:   int('sort_pos'),
+                random_pos: text('random_pos'),
+            }
+            if (markChanged) result.changed= !result.sort_pos || !result.random_pos
+
+            if (!result.random_pos) result.random_pos= '' + Math.random()
+
+            return result
+        }
+
         this.type=      data.type
         this.rawData=   function() {return data}
         this.has=       has
@@ -395,6 +409,7 @@ jQuery(function($) {
         this.invalidateDetails= invalidateDetails
         this.set=       set
         this.itemHtml=  itemHtml
+        this.sortKey=   sortKey
 
         return this
     }
@@ -609,7 +624,7 @@ jQuery(function($) {
             if (sorted_keys[order]) return sorted_keys[order];
 
             var fn_sortText;
-            var inverse = 0;
+            var inverse = false;
             switch (order) {
                 case 'abc':
                 case 'cba':
@@ -637,8 +652,9 @@ jQuery(function($) {
         };
 
         var savePlaysOrder= function() {
-            var data= {};
-            var sort_keys= sort('orig');
+            if (me.get('playlist_type') !== 'real') return
+            var data= {}
+            var sort_keys= sort('orig')
             Util.forEach(sort_keys, function(key, i) {
                 var item= items[key.uid];
                 var sort_pos= parseInt(i, 10) + 1;
@@ -646,9 +662,8 @@ jQuery(function($) {
                 data[item.text('play_id')]= {
                     sort_pos:   sort_pos,
                     random_pos: key.random_pos,
-                };
-            });
-            if (me.get('playlist_type') === 'virtual') return;
+                }
+            })
             console.debug('Saving plays order');
             Util.doJsonRequest('save-playlist-order',
                 me.addIdParams({
@@ -659,34 +674,22 @@ jQuery(function($) {
                         console.error(data.error);
                     }
                 }
-            );
+            )
         }
 
-        var getItemsSortKey= function(item) {
-            var result= {
-                uid:       item.text('uid'),
-                sort_text: item.text('sort_text'),
-            };
-
-            result.sort_pos= item.int('sort_pos');
-            if (!result.sort_pos) result.changed= true;
-
-            result.random_pos= item.text('random_pos');
-            if (!result.random_pos) {
-                result.random_pos= '' + Math.random();
-                result.changed= true;
-            }
-            return result;
-        };
-
         // build sortable array containing various sort values and uid
-        var buildItemsSort= function() {
+        var buildItemsSort= function(unsorted_offset) {
+            if (unsorted_offset === undefined) unsorted_offset= 100000
             _resetSortCaches();
             var changed= false;
             items_sort_keys= []
             Util.forEach(items, function(item) {
-                var sort_key= getItemsSortKey(item);
+                var sort_key= item.sortKey(true)
                 if (sort_key.changed) {
+                    if (!sort_key.sort_pos) {
+                        // append unsorted items to the end in the current order
+                        sort_key.sort_pos= unsorted_offset + items_sort_keys.length
+                    }
                     changed= true;
                     delete sort_key.changed;
                 }
@@ -738,7 +741,7 @@ jQuery(function($) {
                         function(item) {items[item.text('uid')]= item}
                     )
                     items_valid= true;
-                    buildItemsSort();
+                    buildItemsSort(js_data.items.length + 100000);
                     return items;
                 },
                 fn
@@ -831,8 +834,7 @@ jQuery(function($) {
             var _finish= function() {
                 Util.forEach(new_items, function(item) {
                     items[item.text('uid')]= item;
-                    var sort_key= getItemsSortKey(item);
-                    delete sort_key.changed;
+                    var sort_key= item.sortKey();
                     sort_key.sort_pos= sort_pos_prefix + '_' + (sort_pos++);
                     items_sort_keys.push(sort_key);
                 });
