@@ -74,6 +74,8 @@ jQuery(function($) {
             }
             if (type === 'getData') return undefined
             fnQueue.push(arguments)
+            // return an empty object with this function to allow jPlayer(...).jPlayer(...)
+            return {jPlayer: jPlayer}
         }
     })()
 
@@ -206,9 +208,9 @@ jQuery(function($) {
         $("#jquery_jplayer").jPlayer( {
             ready: function () {
                 jPlayer('ready')
-                jPlayer('volumeMax')
-                jPlayer('onSoundComplete', playerStopped)
-                jPlayer('onProgressChange', playerProgress)
+                .jPlayer('volumeMax')
+                .jPlayer('onSoundComplete', playerStopped)
+                .jPlayer('onProgressChange', playerProgress)
             },
 //            oggSupport: true,
             swfPath: '/static/',
@@ -217,7 +219,13 @@ jQuery(function($) {
         // manage player's buttons
         $('ul.playctl li').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
-            if ($(this).hasClass('play')) {
+            if ($(this).hasClass('play-pause')) {
+                if (jPlayer('getData', 'diag.isPlaying')) {
+                    jPlayer('pause');
+                    $('#player').attr('state', 'paused');
+                    console.debug('Pause');
+                    return
+                }
                 if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
                     jPlayer('play');
                     console.debug('Play (unpaused)');
@@ -229,11 +237,6 @@ jQuery(function($) {
                 }
                 $('#player').attr('state', 'playing');
                 playerStarted()
-            }
-            else if ($(this).hasClass('pause')) {
-                jPlayer('pause');
-                $('#player').attr('state', 'paused');
-                console.debug('Pause');
             }
             else if ($(this).hasClass('prev')) {
                 console.debug('Prev');

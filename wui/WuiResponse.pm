@@ -459,10 +459,10 @@ sub _indexBody {
                         <div class="progressbar"></div>
                     </div>
                     <ul class="playctl ui-widget ui-helper-clearfix">
-                        <li class="play ui-state-default ui-corner-all ui-state-disabled">
+                        <li class="play play-pause ui-state-default ui-corner-all ui-state-disabled">
                             <span class="ui-icon ui-icon-play"></span>
                         </li>
-                        <li class="pause ui-state-default ui-corner-all ui-state-disabled">
+                        <li class="pause play-pause ui-state-default ui-corner-all ui-state-disabled">
                             <span class="ui-icon ui-icon-pause"></span>
                         </li>
                         <li class="prev ui-state-default ui-corner-all ui-state-disabled">
