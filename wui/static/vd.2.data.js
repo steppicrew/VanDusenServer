@@ -934,7 +934,7 @@ jQuery(function($) {
             null,
             function(data) {
                 if (data.ok) {
-                    if (fn) fn(VD.Item.create(data.playlist));
+                    if (fn) fn(new _Playlist(data.playlist));
                     return;
                 }
                 if (data.error) {
@@ -944,20 +944,18 @@ jQuery(function($) {
         );
     };
 
-    VD.Item= (function() {
-        return {
-            create: function(data){
-                if (data && data.type) {
-                    switch(data.type) {
-                        case 'play': return new _Play(data);
-                        case 'file': return new _File(data);
-                        case 'playlist': return new _Playlist(data);
-                    }
+    VD.Item= {
+        create: function(data){
+            if (data && data.type) {
+                switch (data.type) {
+                    case 'play':     return new _Play(data)
+                    case 'file':     return new _File(data)
+                    case 'playlist': return new _Playlist(data)
                 }
-                return new _ItemBase();
-            },
-            createPlaylist: _PlaylistCreate,
-        };
-    })();
+            }
+            return new _ItemBase()
+        },
+        createPlaylist: _PlaylistCreate,
+    }
 
 });
