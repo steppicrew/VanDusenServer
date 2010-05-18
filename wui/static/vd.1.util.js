@@ -56,11 +56,19 @@ jQuery(function($) {
 
         // idee: array aus [sorttext, original], nach [0] sortieren und array aus [1] zurueck
         // Fuehrende Leer- & Anfuehrungszeichen ignorieren
-        return map(map(a, function(value) {return [
-            ('' + fn_sortString(value)).toLowerCase().replace(/^\W+/, '')
-                .replace(/(\d+)/g, function(str) {return 1000000000 + parseInt(str, 10)})
-            , value
-        ]}).sort(fn_sort), function(value) {return value[1]});
+        return map(
+            map(
+                a,
+                function(value) {
+                    return [
+                        ('' + fn_sortString(value)).toLowerCase().replace(/^[\s\"]+/, '')               // fix syntax highlighting: "
+                        .replace(/(\d+)/g, function(str) {return 1000000000 + parseInt(str, 10)}),
+                        value,
+                    ]
+                }
+            ).sort(fn_sort),
+            function(value) {return value[1]}
+        )
     }
 
     var formatTime= function(iSec) {
