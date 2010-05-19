@@ -330,7 +330,6 @@ jQuery(function($) {
                 Event.fire('updatedItem', item);
                 Util.setHtml($('#player .info'), item.itemHtml());
                 updateFileNum();
-                playerStarted()
             }
         );
         _play_button_cache.play.removeClass('ui-state-disabled');
@@ -356,6 +355,7 @@ jQuery(function($) {
             updateFileNum();
         });
         $('#player').attr('state', 'playing');
+        playerStarted()
         return true;
     };
 
