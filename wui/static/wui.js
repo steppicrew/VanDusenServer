@@ -179,15 +179,6 @@ jQuery(function($) {
                 )
             }
         )
-        // catch spaces to toggle play/pause
-        $('html').keydown(function(e) {
-            if (e.keyCode === 32) {
-                if (!$(e.target).is('input') && !$(e.target).is('textarea')) {
-                    $('.playctl .pause').trigger('click');
-                    return false;
-                }
-            }
-        });
         $('#edit-item').dialog({
             'autoOpen': false,
             'modal': true,

@@ -216,27 +216,32 @@ jQuery(function($) {
             swfPath: '/static/',
         })
 
+        var playPause= function() {
+            if (jPlayer('getData', 'diag.isPlaying')) {
+                jPlayer('pause');
+                $('#player').attr('state', 'paused');
+                console.debug('Pause');
+                return
+            }
+            if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
+                jPlayer('play');
+                console.debug('Play (unpaused)');
+            }
+            else {
+                // requeue current file
+                playFile();
+                console.debug('Play');
+            }
+            $('#player').attr('state', 'playing');
+            playerStarted()
+            return false
+        }
+
         // manage player's buttons
         $('ul.playctl li').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
             if ($(this).hasClass('play-pause')) {
-                if (jPlayer('getData', 'diag.isPlaying')) {
-                    jPlayer('pause');
-                    $('#player').attr('state', 'paused');
-                    console.debug('Pause');
-                    return
-                }
-                if (jPlayer('getData', 'diag.playedTime') > 0) { // PAUSED
-                    jPlayer('play');
-                    console.debug('Play (unpaused)');
-                }
-                else {
-                    // requeue current file
-                    playFile();
-                    console.debug('Play');
-                }
-                $('#player').attr('state', 'playing');
-                playerStarted()
+                playPause()
             }
             else if ($(this).hasClass('prev')) {
                 console.debug('Prev');
@@ -283,6 +288,15 @@ jQuery(function($) {
             updateTimeMode();
             _updatePlayerStatus();
         });
+
+        // catch spaces to toggle play/pause
+        $('html').keydown(function(e) {
+            if (e.keyCode === 32) {
+                if (!$(e.target).is('input') && !$(e.target).is('textarea')) {
+                    return playPause()
+                }
+            }
+        })
 
         $('#player .progressbar').slider({
             'max': _slider_max - 1,
