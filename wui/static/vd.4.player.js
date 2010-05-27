@@ -1,4 +1,3 @@
-
 // ============================================================================
 //     VLC Player Library
 // ============================================================================
@@ -56,24 +55,27 @@ jQuery(function($) {
     var jPlayer= (function() {
         var $player= $('#jquery_jplayer')
         var _jPlayer= $player.jPlayer
-        var fnQueue= []
+        var fnDataQueue= []
         var ready= false
+
+        // initialize player
+        $player.jPlayer( {
+            ready: function () {
+                ready= true
+                Util.forEach(fnDataQueue, function(fnData) {_jPlayer.apply($player, fnData)})
+                fnDataQueue= []
+            },
+//            oggSupport: true,
+            swfPath: '/static/',
+        })
 
         return function() {
             // console.log('jPlayer', arguments)
             if (ready) return _jPlayer.apply($player, arguments)
-            var type= arguments[0]
-            if (type === 'ready') {
-                ready= true
-                while (true) {
-                    var fnData= fnQueue.shift()
-                    if (fnData === undefined) break;
-                    _jPlayer.apply($player, fnData)
-                }
-                return $player
-            }
-            if (type === 'getData') return undefined
-            fnQueue.push(arguments)
+            // return undefined for getData calls unless ready
+            if (arguments[0] === 'getData') return undefined
+            // queue function
+            fnDataQueue.push(arguments)
             // return an empty object with this function to allow jPlayer(...).jPlayer(...)
             return {jPlayer: jPlayer}
         }
@@ -83,19 +85,6 @@ jQuery(function($) {
     var getItem= function(uid) {
         if (_playlist) return _playlist.getItem(uid);
         return null;
-    };
-
-    var queue= function(uid) {
-        if (!getItem(uid)) {
-            stop();
-            return;
-        }
-        queueItem(uid);
-    }
-
-    var play= function(uid) {
-        queue(uid);
-        playFile();
     };
 
     // update player status buttons (shuffle, repeat etc)
@@ -186,7 +175,7 @@ jQuery(function($) {
         setPlaylist(playlist, function(items) {
             var item_uid= status['item-uid'];
             if (item_uid) {
-                queueItem(item_uid);
+                queue(item_uid);
             }
             Event.fire('changedPlayersOrder', _player_status.shuffle ? 'random' : 'orig');
         });
@@ -205,16 +194,9 @@ jQuery(function($) {
 
     var _init= function() {
         // initialize player
-        $("#jquery_jplayer").jPlayer( {
-            ready: function () {
-                jPlayer('ready')
-                .jPlayer('volumeMax')
-                .jPlayer('onSoundComplete', playerStopped)
-                .jPlayer('onProgressChange', playerProgress)
-            },
-//            oggSupport: true,
-            swfPath: '/static/',
-        })
+        jPlayer('volumeMax')
+        jPlayer('onSoundComplete', playerStopped)
+        jPlayer('onProgressChange', playerProgress)
 
         var playPause= function() {
             if (jPlayer('getData', 'diag.isPlaying')) {
@@ -329,135 +311,132 @@ jQuery(function($) {
 //      player_obj and player_obj-playlist related functions
 // ============================================================================
 
-    // queues new item
-    var queueItem= function(uid) {
-        _item_uid= uid;
-        var item= getItem(uid);
-        if (!item) return;
+    // queues new item (updates player's display with new item)
+    var queue= function(uid) {
+        _item_uid= uid
+        var item= getItem(uid)
+        if (!item) return stop()
 
-        _item_file_index= 0;
+        _item_file_index= 0
 
-        _player_status['playlist-id']= _playlist.text('playlist_id');
-        _player_status['item-uid']= _item_uid;
+        _player_status['playlist-id']= _playlist.text('playlist_id')
+        _player_status['item-uid']= _item_uid
         _updatePlayerStatus(
             function () {
-                Event.fire('updatedItem', item);
-                Util.setHtml($('#player .info'), item.itemHtml());
+                Event.fire('updatedItem', item)
+                Util.setHtml($('#player .info'), item.itemHtml())
                 updateFileNum();
             }
-        );
-        _play_button_cache.play.removeClass('ui-state-disabled');
-        Event.fire('activeItemChanged');
-        return true;
-
-    };
+        )
+        _play_button_cache.play.removeClass('ui-state-disabled')
+        Event.fire('activeItemChanged')
+        return true
+    }
 
     // starts playing of current file
     var playFile= function() {
-        var item= getItem(_item_uid);
-        if (!item) return false;
+        var item= getItem(_item_uid)
+        if (!item) return stop()
 
-        var file= item.get('play_files')[_item_file_index];
-        if (!file) return false;
+        var file= item.get('play_files')[_item_file_index]
+        if (!file) return stop()
 
-        jPlayer('setFile', _base_url + file.get('url'));
-//        jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3');
+        jPlayer('setFile', _base_url + file.get('url'))
+//        jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3')
         jPlayer('play')
 
         file.updateLastPlayed(function() {
-            item.invalidateDetails();
-            updateFileNum();
-        });
-        $('#player').attr('state', 'playing');
+            item.invalidateDetails()
+            updateFileNum()
+        })
+        $('#player').attr('state', 'playing')
         playerStarted()
-        return true;
-    };
+        return true
+    }
+
+    var play= function(uid) {
+        queue(uid)
+        playFile()
+    }
 
     var stop= function() {
-        jPlayer('clearFile');
+        jPlayer('clearFile')
 
-        _item_uid= null;
-        _item_file_index= -1;
-    };
+        _item_uid= null
+        _item_file_index= -1
+    }
 
     var getSortOrder= function() {return _player_status.shuffle ? 'random' : 'orig'}
 
     var nextTitle= function(dir, queue_only) {
-        var item= getItem(_item_uid);
-        if (!item) return stop();
+        var item= getItem(_item_uid)
+        if (!item) return stop()
 
-        var item_files= item.get('play_files');
+        var item_files= item.get('play_files')
 
-        _item_file_index+= dir;
-        if (playFile()) return;
+        _item_file_index+= dir
+        if (playFile()) return
 
-        var index= _playlist.getItemIndex(_item_uid, getSortOrder());
-        if (index == null) return;
+        var index= _playlist.getItemIndex(_item_uid, getSortOrder())
+        if (index == null) return
 
-        var uid= _playlist.getUidByIndex(index + dir, getSortOrder());
+        var uid= _playlist.getUidByIndex(index + dir, getSortOrder())
         if (!uid && dir > 0) {
 
-            // if end is reached, reshuffle if enabled
-            if (_player_status.shuffle) _playlist.scramble();
+            // if end is reached, reshuffle if shuffle mode is enabled
+            if (_player_status.shuffle) _playlist.scramble()
 
-            // ...restart playlist
+            // ...restart playlist if repeat is enabled
             if (_player_status.repeat) {
-                uid= _playlist.getUidByIndex(0, getSortOrder());
+                uid= _playlist.getUidByIndex(0, getSortOrder())
             }
         }
         if (uid) {
-            if (queue_only) {
-                queue(uid);
-            }
-            else {
-                play(uid);
-            }
+            queue(uid)
+            if (queue_only) return
+            playFile()
         }
     }
 
     var enableProgressBar= (function() {
-        var progressbar_disabled= true;
-        var $progressbar=       $('#player .progressbar');
+        var enabled= false
+        var $progressbar= $('#player .progressbar')
 
         return function(enable) {
-            if (enable){
-                if (progressbar_disabled) $progressbar.slider('enable');
+            if (enable !== enabled) {
+                $progressbar.slider(enable ? 'enable' : 'disable')
+                enabled= enable
             }
-            else {
-                if (!progressbar_disabled) $progressbar.slider('disable');
-            }
-            progressbar_disabled= !enable;
         }
-    })();
+    })()
 
     var playerStarted= function() {
-        enableProgressBar(true);
+        enableProgressBar(true)
         Util.forEach(_play_buttons, function(button) {
-            var $b= _play_button_cache[button];
+            var $b= _play_button_cache[button]
             if ($b.hasClass('ui-state-disabled')) {
-                $b.removeClass('ui-state-disabled');
+                $b.removeClass('ui-state-disabled')
             }
         })
     }
 
     var playerStopped= function() {
-        var $player=            $('#player');
+        var $player= $('#player')
 
-        var was_playing= $player.attr('state') === 'playing';
+        var was_playing= $player.attr('state') === 'playing'
 
-        $player.attr('state', 'stopped');
-        Event.fire('activeItemChanged');
+        $player.attr('state', 'stopped')
+        Event.fire('activeItemChanged')
 
-        enableProgressBar(false);
+        enableProgressBar(false)
         Util.forEach(_play_buttons, function(button) {
-            var $b= _play_button_cache[button];
+            var $b= _play_button_cache[button]
             if (! $b.hasClass('ui-state-disabled')) {
-                $b.addClass('ui-state-disabled');
+                $b.addClass('ui-state-disabled')
             }
-        });
+        })
 
         if (_item_uid) {
-            var play_next= false
             if (was_playing) {
                 if (_player_status['stop-after']) {
                     // try to get next playable file of the same item
@@ -472,7 +451,7 @@ jQuery(function($) {
                     return
                 }
             }
-            // on "stop-after" requeue current item
+            // requeue current item and pause
             queue(_item_uid)
             $player.attr('state', 'paused')
             return
@@ -514,13 +493,8 @@ jQuery(function($) {
         setup: setup,
         play: play,
         getCurrentItem: function() {return getItem(_item_uid)},
-    };
+    }
 
+    })()
 
-// ============================================================================
-//      Prologue
-// ============================================================================
-
-    })();
-
-});
+})
