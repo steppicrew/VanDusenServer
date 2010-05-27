@@ -369,7 +369,9 @@ jQuery(function($) {
     var getSortOrder= function() {return _player_status.shuffle ? 'random' : 'orig'}
 
     var nextTitle= function(dir, queue_only) {
-        var item= getItem(_item_uid)
+        // remember current item - playFile() will call stop() on failure and reset _item_uid
+        var uid= _item_uid
+        var item= getItem(uid)
         if (!item) return stop()
 
         var item_files= item.get('play_files')
@@ -377,10 +379,10 @@ jQuery(function($) {
         _item_file_index+= dir
         if (playFile()) return
 
-        var index= _playlist.getItemIndex(_item_uid, getSortOrder())
+        var index= _playlist.getItemIndex(uid, getSortOrder())
         if (index == null) return
 
-        var uid= _playlist.getUidByIndex(index + dir, getSortOrder())
+        uid= _playlist.getUidByIndex(index + dir, getSortOrder())
         if (!uid && dir > 0) {
 
             // if end is reached, reshuffle if shuffle mode is enabled
