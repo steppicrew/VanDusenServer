@@ -296,9 +296,10 @@ jQuery(function($) {
         });
 
         Event.add('playItem', function(uid, playlist) {
-            if (playlist) return setPlaylist(playlist, function() { play(uid); });
-            play(uid);
-        });
+            stop()
+            if (playlist) return setPlaylist(playlist, function() { play(uid) })
+            play(uid)
+        })
 
         Event.add('updatedListItem', function() {
             updateTimeMode();
@@ -479,9 +480,12 @@ jQuery(function($) {
                 Util.setHtml($('#player .' + key), Util.formatTime(curData[key]))
                 updated= true
             }
-            lastData= curData
 
-            if (updated) $progressbar.slider('value', playedPercentAbs / 100 * _slider_max)
+            if (!updated) return
+
+            $progressbar.slider('value', playedPercentAbs / 100 * _slider_max)
+
+            lastData= curData
         }
     })();
 
@@ -493,7 +497,6 @@ jQuery(function($) {
 
     return {
         setup: setup,
-        play: play,
         getCurrentItem: function() {return getItem(_item_uid)},
     }
 

@@ -85,12 +85,16 @@ jQuery(function($) {
         return iMin + ':' + sec;
     };
 
-    var forEach= function(array, fn) {
-        for (var i in array) {
-            var result= fn(array[i], i, array)
-            if (result !== undefined) return result
+    var forEach= (function () {
+        // define a unique value to be returned, if loop should be ended but forEach should return undefined
+        var undef= {}
+        return function(array, fn) {
+            for (var i in array) {
+                var result= fn(array[i], i, array, undef)
+                if (result !== undefined) return result === undef ? undefined : result
+            }
         }
-    }
+    })()
 
     var map= function(array, fn) {
         var result= []
