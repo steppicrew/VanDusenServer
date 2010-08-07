@@ -22,6 +22,7 @@ def __main__():
 
     ftp = FTPFetch(
         host = config.ftp_hostname,
+        port = config.ftp_port,
         user = config.ftp_username,
         passwd = config.ftp_password,
         params = {

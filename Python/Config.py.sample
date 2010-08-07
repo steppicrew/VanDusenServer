@@ -10,6 +10,7 @@ class Config(object):
             FTP login credentials
         """
         self.ftp_hostname= 'hostname or ip address'
+        self.ftp_port= 21
         self.ftp_username= 'my secret user name'
         self.ftp_password= 'my even more secret password'
 

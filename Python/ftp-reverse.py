@@ -5,6 +5,7 @@
 from FTPFetch import FTPFetch
 from DupMerge import DupMerge
 from Logger import Logger
+from Config import Config
 import os
 
 def __main__():
@@ -21,6 +22,7 @@ def __main__():
 
     ftp = FTPFetch(
         host = config.ftp_hostname,
+        port = config.ftp_port,
         user = config.ftp_username,
         passwd = config.ftp_password,
         params = {

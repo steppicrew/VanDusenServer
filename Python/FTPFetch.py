@@ -27,11 +27,12 @@ FTP_RECONNECT_DELAY = 60
 
 class FTPFetch:
     """A simple class to FTP files."""
-    def __init__(self,  host,  user,  passwd, params):
+    def __init__(self,  host, port,  user,  passwd, params):
         """Requires host name, user name, password and destination directory."""
         self.__ftp = None
         self.__ftp_data = {
             'host': host,
+            'port': port,
             'user': user,
             'passwd': passwd,
         }
@@ -87,8 +88,9 @@ class FTPFetch:
             self._logger.info("Trying to connect to " + self.__ftp_data['host']
                         +  " (try " + unicode(i_trynum) + ")...")
             try:
-                self.__ftp = FTP(self.__ftp_data['host'])
+                self.__ftp = FTP()
                 try:
+                    self.__ftp.connect(self.__ftp_data['host'], self.__ftp_data['port'])
                     self.__ftp.login(
                         self.__ftp_data['user'],
                         self.__ftp_data['passwd']
