@@ -17,7 +17,8 @@ my %conf= (
     open $fh, $sConfFileName or die "Could not open conf file '$sConfFileName'";
     my %fConfSets= (
         basedir    => sub { $conf{basedir}=    Cwd::abs_path(shift); $conf{basedir}=~ s/\/$//; },
-        baseurl    => sub { $conf{baseurl}=    shift; },
+        mp3url     => sub { $conf{mp3url}=     shift; },
+        oggurl     => sub { $conf{oggurl}=     shift; },
         md5db      => sub { $conf{md5db}=      shift; },
         hoerdatdb  => sub { $conf{hoerdatdb}=  shift; },
         fulltextdb => sub { $conf{fulltextdb}= shift; },

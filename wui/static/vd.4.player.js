@@ -21,7 +21,8 @@ jQuery(function($) {
     var _playlist= null;
     var _item_uid= null;
     var _item_file_index= -1;
-    var _base_url= 'file://';
+    var _mp3_url= 'file://';
+    var _ogg_url= null;
 
     var _play_buttons= [ 'play', 'pause', 'prev', 'next' ];
 
@@ -65,7 +66,9 @@ jQuery(function($) {
                 Util.forEach(fnDataQueue, function(fnData) {_jPlayer.apply($player, fnData)})
                 fnDataQueue= []
             },
-//            oggSupport: true,
+            nativeSupport: true,
+//            oggSupport: _ogg_url ? true : false,
+            oggSupport: true,
             swfPath: '/static/',
         })
 
@@ -146,8 +149,9 @@ jQuery(function($) {
         Util.setHtml($file_no, (_item_file_index + 1) + '/' + play_files.length);
     };
 
-    var setup= function(status, base_url, fn_getPlaylist, fn_loadPlaylist) {
-        _base_url= base_url;
+    var setup= function(status, mp3_url, ogg_url, fn_getPlaylist, fn_loadPlaylist) {
+        _mp3_url= mp3_url;
+        _ogg_url= ogg_url;
         _player_status= {};
         Util.forEach(_player_status_types, function(type, status_type) {
             var value= status[status_type];
@@ -342,7 +346,8 @@ jQuery(function($) {
         var file= item.get('play_files')[_item_file_index]
         if (!file) return stop()
 
-        jPlayer('setFile', _base_url + file.get('url'))
+//        jPlayer('setFile', _mp3_url + file.get('url'))
+        jPlayer('setFile', _mp3_url + file.get('url'), _ogg_url + file.get('url'))
 //        jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3')
         jPlayer('play')
 
@@ -467,6 +472,17 @@ jQuery(function($) {
         var lastData= {}
 
         return function(loadPercent, playedPercentRel, playedPercentAbs, timePlayed, timeTotal) {
+            if (timeTotal == 0) {
+                if (_item_uid != lastData['item_uid'] || _item_file_index != lastData['file_index'] || !lastData['file_length']) {
+                    var item= getItem(_item_uid)
+                    if (item) {
+                        var file= item.get('play_files')[_item_file_index]
+                        lastData['file_length']= file.get('length') * 1000;
+                    }
+                }
+                timeTotal= lastData['file_length'];
+            }
+
             var curData= {
                 position: parseInt(timePlayed / 1000),
                 length:   parseInt(timeTotal / 1000),

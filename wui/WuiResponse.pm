@@ -250,7 +250,8 @@ sub _cmd_getGlobalData {
         $hPlayerStatus->{$sStatus}= $self->{cookies}{'playerstatus_' . $sStatus};
     }
     return $self->_buildJson({
-        'baseurl'          => $conf{baseurl},
+        'mp3url'           => $conf{mp3url},
+        'oggurl'           => $conf{oggurl},
         'player-status'    => $hPlayerStatus,
         'last-playlist-id' => $self->{cookies}{last_playlist_id},
     });

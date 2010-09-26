@@ -2,7 +2,8 @@
 
 basedir = base_dir_to_plays
 
-baseurl = http://base_url_to_fetch_plays_may_be_a_file_system_path
+mp3url = http://base_url_to_fetch_plays_may_be_a_file_system_path
+oggurl = http://base_url_to_fetch_plays_may_be_a_file_system_path
 
 hoerdatdb = path_to_hoerdat.db
 md5db = path_to_md5.db

@@ -172,7 +172,8 @@ jQuery(function($) {
                     },
                     function() {return Player.setup(
                         js_data['player-status'],
-                        js_data.baseurl,
+                        js_data.mp3url,
+                        js_data.oggurl,
                         function(id) {return Playlist.getPlaylist(id, 'create if not exists')},
                         Util.loadPlaylist
                     )}
