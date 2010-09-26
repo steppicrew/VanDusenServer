@@ -472,6 +472,7 @@ jQuery(function($) {
         var lastData= {}
 
         return function(loadPercent, playedPercentRel, playedPercentAbs, timePlayed, timeTotal) {
+            // fix for realtime ogg-streams
             if (timeTotal == 0) {
                 if (_item_uid != lastData['item_uid'] || _item_file_index != lastData['file_index'] || !lastData['file_length']) {
                     var item= getItem(_item_uid)
