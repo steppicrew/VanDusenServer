@@ -27,6 +27,7 @@ my $conf= Conf->new(
         fulltextdb => undef,
         timeout    => undef,
         readonly   => undef,
+        timeout    => 86_400,
     }
 );
 
