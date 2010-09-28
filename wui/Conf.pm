@@ -6,26 +6,15 @@ use warnings;
 use Data::Dumper;
 use Cwd;
 
-my $sConfFileName= './wui.conf';
-my %conf= (
-    # timeout 1 jahr
-    timeout => 365 * 86_500,
-);
+sub new {
+    my $class= shift;
+    my $sFileName= shift;
+    my $hSchema= shift;
 
-{
     my $fh;
-    open $fh, $sConfFileName or die "Could not open conf file '$sConfFileName'";
-    my %fConfSets= (
-        basedir    => sub { $conf{basedir}=    Cwd::abs_path(shift); $conf{basedir}=~ s/\/$//; },
-        mp3url     => sub { $conf{mp3url}=     shift; },
-        oggurl     => sub { $conf{oggurl}=     shift; },
-        md5db      => sub { $conf{md5db}=      shift; },
-        hoerdatdb  => sub { $conf{hoerdatdb}=  shift; },
-        fulltextdb => sub { $conf{fulltextdb}= shift; },
-        timeout    => sub { $conf{timeout}=    shift; },
-        readonly   => sub { $conf{readonly}=   shift; },
-    );
+    open $fh, $sFileName or die "Could not open conf file '$sFileName'";
     my $line= 0;
+    my %conf= ();
     while (<$fh>) {
         $line++;
         s/^\s+//;
@@ -33,19 +22,38 @@ my %conf= (
         next if /^#/;
         next unless /^(\w+?)\s*\=\s*(.*)$/;
         my ($key, $value)= ($1, $2);
-        if ($fConfSets{$key}) {
-            $fConfSets{$key}->($value);
+        if (exists $hSchema->{$key}) {
+            $conf{$key}= ref $hSchema->{$key} ? $hSchema->{$key}->($value) : $value;
             next;
         }
         warn "Unknown key '$key' in line $line";
     }
     close $fh;
+
+    my $self= {
+        _conf => \%conf,
+        _schema => $hSchema,
+    };
+    bless $self, $class;
 }
 
-sub GetConfdata {
-    my $class= shift;
+sub get {
+    my $self= shift;
+    my $key= shift;
 
-    return { %conf };
+    return $self->{_conf}{$key} if (exists $self->{_conf}{$key});
+    return $self->{_schema}{$key} if (exists $self->{_schema}{$key} && !ref $self->{_schema}{$key});
+    warn "You requested an undefined field";
+    return undef;
+}
+
+sub set {
+    my $self= shift;
+    my $key= shift;
+    my $value= shift;
+
+    $self->{_conf}{$key}= $value;
+    return $value;
 }
 
 1;

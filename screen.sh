@@ -11,7 +11,7 @@ screen './wui-debug.pl'
 screen '../ogg-server/ogg-server.pl'
 EOT
 
-screen -c "$cfile"
+screen -d -m -U -c "$cfile"
 rm "$cfile"
 
 # screen './wui-debug.pl'

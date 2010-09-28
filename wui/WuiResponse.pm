@@ -16,8 +16,21 @@ use FileDB;
 use ParseHoerdat;
 use Conf;
 
-my %conf= %{Conf::GetConfdata()};
-$conf{filedb}= FileDB->new(%conf);
+my $conf= Conf->new(
+    './wui.conf',
+    {
+        basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
+        mp3url     => undef,
+        oggurl     => undef,
+        md5db      => undef,
+        hoerdatdb  => undef,
+        fulltextdb => undef,
+        timeout    => undef,
+        readonly   => undef,
+    }
+);
+
+my $filedb= FileDB->new($conf);
 
 my @sPlayerStatus= ('repeat', 'shuffle', 'stop-after', 'playlist-id', 'item-uid', 'time-mode');
 
@@ -117,7 +130,7 @@ sub _getCookies {
             $self->{cgi}->cookie(
                 -name => $_,
                 -value => $self->{cookies}{$_},
-                -expires => '+' . $conf{timeout} . 's',
+                -expires => '+' . $conf->get('timeout') . 's',
             )
         } keys %{$self->{cookies}}
     ];
@@ -250,8 +263,8 @@ sub _cmd_getGlobalData {
         $hPlayerStatus->{$sStatus}= $self->{cookies}{'playerstatus_' . $sStatus};
     }
     return $self->_buildJson({
-        'mp3url'           => $conf{mp3url},
-        'oggurl'           => $conf{oggurl},
+        'mp3url'           => $conf->get('mp3url'),
+        'oggurl'           => $conf->get('oggurl'),
         'player-status'    => $hPlayerStatus,
         'last-playlist-id' => $self->{cookies}{last_playlist_id},
     });
@@ -261,7 +274,7 @@ sub _cmd_setFileLastPlayed {
     my $self= shift;
 
     my $sMd5= $self->{data}{md5};
-    $conf{filedb}->playFile($sMd5),
+    $filedb->playFile($sMd5),
 
     return $self->_buildJson({});
 }
@@ -290,7 +303,7 @@ sub _cmd_setRating {
     my $iPlayId= $self->{data}{play_id};
     my $iNewRating= $self->{data}{rating};
 
-    return $self->_buildJson( $conf{filedb}->setRating($iPlayId, $iNewRating) );
+    return $self->_buildJson( $filedb->setRating($iPlayId, $iNewRating) );
 }
 
 sub _cmd_getFileData {
@@ -300,7 +313,7 @@ sub _cmd_getFileData {
     my $sFileName= $self->{data}{name} || '';
 
     return $self->_buildJson(
-        $conf{filedb}->getFileDetails(File::Spec->catdir($sPath, $sFileName), 1),
+        $filedb->getFileDetails(File::Spec->catdir($sPath, $sFileName), 1),
     );
 }
 
@@ -311,12 +324,12 @@ sub _cmd_getDetails {
 
     if ($sType eq 'file') {
         return $self->_buildJson(
-            $conf{filedb}->getFileDetails($self->{data}{md5}),
+            $filedb->getFileDetails($self->{data}{md5}),
         );
     }
     elsif ($sType eq 'play') {
         return $self->_buildJson(
-            $conf{filedb}->getPlayDetails($self->{data}{play_id}),
+            $filedb->getPlayDetails($self->{data}{play_id}),
         );
     }
     return $self->_buildJson({});
@@ -329,12 +342,12 @@ sub _cmd_setDetails {
 
     if ($sType eq 'file') {
         return $self->_buildJson(
-            $conf{filedb}->setFileDetails($self->{data}{md5}, $self->{data}{data}),
+            $filedb->setFileDetails($self->{data}{md5}, $self->{data}{data}),
         );
     }
     elsif ($sType eq 'play') {
         return $self->_buildJson(
-            $conf{filedb}->setPlayDetails($self->{data}{play_id}, $self->{data}{data}),
+            $filedb->setPlayDetails($self->{data}{play_id}, $self->{data}{data}),
         );
     }
 }
@@ -345,7 +358,7 @@ sub _cmd_setExtendedFileDetails {
     my $sMd5= $self->{data}{md5};
     my $hData= $self->{data}{data};
 
-    return $self->_buildJson($conf{filedb}->setExtendedFileDetails($sMd5, $hData));
+    return $self->_buildJson($filedb->setExtendedFileDetails($sMd5, $hData));
 }
 
 sub _cmd_setPlaysFileOrder {
@@ -354,7 +367,7 @@ sub _cmd_setPlaysFileOrder {
     my $iPlayId= $self->{data}{play_id};
     my $hOrder= $self->{data}{order};
 
-    return $self->_buildJson($conf{filedb}->setPlaysFileOrder($iPlayId, $hOrder));
+    return $self->_buildJson($filedb->setPlaysFileOrder($iPlayId, $hOrder));
 }
 
 sub _cmd_queryHoerdat {
@@ -379,8 +392,8 @@ sub _cmd_getPlaylists {
     my $self= shift;
 
     return $self->_buildJson([
-        @{$conf{filedb}->getRealPlaylists()},
-        @{$conf{filedb}->getVirtualPlaylists()},
+        @{$filedb->getRealPlaylists()},
+        @{$filedb->getVirtualPlaylists()},
     ]);
 }
 
@@ -388,7 +401,7 @@ sub _cmd_createPlaylist {
     my $self= shift;
 
     my $sName= $self->{data}{name};
-    return $self->_buildJson($conf{filedb}->createPlaylist($sName));
+    return $self->_buildJson($filedb->createPlaylist($sName));
 }
 
 sub _cmd_renamePlaylist {
@@ -396,7 +409,7 @@ sub _cmd_renamePlaylist {
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $sNewName= $self->{data}{newname};
-    return $self->_buildJson($conf{filedb}->renamePlaylist($sPlaylistId, $sNewName));
+    return $self->_buildJson($filedb->renamePlaylist($sPlaylistId, $sNewName));
 }
 
 sub _cmd_savePlaylistOrder {
@@ -404,14 +417,14 @@ sub _cmd_savePlaylistOrder {
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $hOrder= $self->{data}{order};
-    return $self->_buildJson($conf{filedb}->savePlaylistOrder($sPlaylistId, $hOrder));
+    return $self->_buildJson($filedb->savePlaylistOrder($sPlaylistId, $hOrder));
 }
 
 sub _cmd_deletePlaylist {
     my $self= shift;
 
     my $sPlaylistId= $self->{data}{playlist_id};
-    return $self->_buildJson($conf{filedb}->deletePlaylist($sPlaylistId));
+    return $self->_buildJson($filedb->deletePlaylist($sPlaylistId));
 }
 
 sub _cmd_addToPlaylist {
@@ -419,7 +432,7 @@ sub _cmd_addToPlaylist {
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};
-    return $self->_buildJson($conf{filedb}->addToPlaylist($sPlaylistId, $aPlays));
+    return $self->_buildJson($filedb->addToPlaylist($sPlaylistId, $aPlays));
 }
 
 sub _cmd_removeFromPlaylist {
@@ -427,7 +440,7 @@ sub _cmd_removeFromPlaylist {
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};
-    return $self->_buildJson($conf{filedb}->removeFromPlaylist($sPlaylistId, $aPlays));
+    return $self->_buildJson($filedb->removeFromPlaylist($sPlaylistId, $aPlays));
 }
 
 sub _cmd_getPlaylist {
@@ -435,7 +448,7 @@ sub _cmd_getPlaylist {
 
     my $sPlaylistId= $self->{data}{playlist_id};
 
-    return $self->_buildJson($conf{filedb}->getPlaylist($sPlaylistId));
+    return $self->_buildJson($filedb->getPlaylist($sPlaylistId));
 }
 
 sub _cmd_search {
@@ -443,7 +456,7 @@ sub _cmd_search {
 
     my $sSearch= $self->{data}{search};
 
-    return $self->_buildJson($conf{filedb}->getPlaylist("search:$sSearch"));
+    return $self->_buildJson($filedb->getPlaylist("search:$sSearch"));
 }
 
 sub _indexBody {

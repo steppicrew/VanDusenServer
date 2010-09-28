@@ -13,12 +13,12 @@ use MyDB;
 
 sub new {
     my $class= shift;
-    my %conf= @_;
+    my $conf= shift;
 
-    my $sHoerdatDb= $conf{hoerdatdb};
-    my $sMd5Db= $conf{md5db};
-    my $sBaseDir= $conf{basedir};
-    my $bReadOnly= $conf{readonly};
+    my $sHoerdatDb= $conf->get('hoerdatdb');
+    my $sMd5Db= $conf->get('md5db');
+    my $sBaseDir= $conf->get('basedir');
+    my $bReadOnly= $conf->get('readonly');
 
     die "FileDB: Need at least 'hoerdatdb', 'md5db' and 'basedir' in constructor" unless $sHoerdatDb && $sMd5Db && defined $sBaseDir;
 

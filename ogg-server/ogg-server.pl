@@ -10,12 +10,19 @@ use URI::Escape;
 
 use Conf;
 
-my %conf= %{Conf::GetConfdata()};
-my $port= $conf{port} || 8081;
+my $conf= Conf->new(
+    './ogg.conf',
+    {
+        basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
+        port       => 8081,
+    }
+);
+
+my $port= $conf->get('port');
 
 sub buildInFileName {
         my $reqFile= shift;
-        return File::Spec->catfile($conf{basedir}, $reqFile);
+        return File::Spec->catfile($conf->get('basedir'), $reqFile);
 }
 
 sub buildTheoraCommand {
