@@ -478,7 +478,7 @@ jQuery(function($) {
                     var item= getItem(_item_uid)
                     if (item) {
                         var file= item.get('play_files')[_item_file_index]
-                        lastData['file_length']= file.get('length') * 1000;
+                        if (file) lastData['file_length']= file.get('length') * 1000;
                     }
                 }
                 timeTotal= lastData['file_length'];
