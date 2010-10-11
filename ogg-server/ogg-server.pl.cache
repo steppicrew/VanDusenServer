@@ -18,6 +18,7 @@ my $conf= Conf->new(
         basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
         tempdir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
         tempcount  => 20,
+        redirectbase => undef,
         port       => 8081,
     }
 );
@@ -31,7 +32,7 @@ sub buildInFileName {
 
 sub buildOutFileName {
         my $reqFile= shift;
-        return File::Spec->catfile($conf->get('tempdir'), md5_hex($reqFile));
+        return File::Spec->catfile($conf->get('tempdir'), md5_hex($reqFile) . '.ogg');
 }
 
 sub buildTheoraCommand {
@@ -171,6 +172,18 @@ POE::Component::Server::TCP->new(
         $heap->{file_name}= $sOutFile;
         if (-f $sOutFile) {
             `touch "$sOutFile"`;
+            my $sRedirectBase= $conf->get('redirectbase');
+            if ($sRedirectBase) {
+                my $response = HTTP::Response->new(303);
+                my $sBaseName= $sOutFile;
+                $sBaseName=~ s/.*\///;
+                my $sLocation= "$sRedirectBase/$sBaseName";
+                $response->push_header('Location', $sLocation);
+                $heap->{client}->put($response);
+                delete $heap->{file_name};
+                print "Redirecting to '$sLocation'\n";
+                return;
+            }
             print "Serving cached file '$sOutFile'\n";
         }
         else {
