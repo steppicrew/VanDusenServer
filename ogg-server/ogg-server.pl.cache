@@ -171,6 +171,7 @@ POE::Component::Server::TCP->new(
         $heap->{file_name}= $sOutFile;
         if (-f $sOutFile) {
             `touch "$sOutFile"`;
+            print "Serving cached file '$sOutFile'\n";
         }
         else {
             cleanupDir;
