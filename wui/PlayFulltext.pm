@@ -27,15 +27,31 @@ sub new {
     my $class = shift;
     my @params= @_;
 
-    my %conf= %{Conf->GetConfdata()};
+#    my %conf= %{Conf->GetConfdata()};
+    my $conf= Conf->new(
+        './wui.conf',
+        {
+            basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
+            mp3url     => undef,
+            oggurl     => undef,
+            md5db      => undef,
+            hoerdatdb  => undef,
+            fulltextdb => undef,
+            timeout    => undef,
+            readonly   => undef,
+            timeout    => 31_536_000,
+        }
+    );
+
     my $fileDb;
     
     my $self= {
-        FULLTEXT => Fulltext->new($conf{fulltextdb}, @params),
+        FULLTEXT => Fulltext->new($conf->get('fulltextdb'), @params),
         FN_FILEDB => sub {
-            $fileDb= FileDB->new(%conf) unless $fileDb;
+            $fileDb= FileDB->new($conf) unless $fileDb;
             return $fileDb;
         },
+        conf => $conf,
     };
 
     bless $self, $class;
@@ -45,7 +61,6 @@ sub rebuild {
     my $self= shift;
     my $startPlayId= shift || 0;
 
-    my %conf= %{Conf->GetConfdata()};
     my $dbFile= $self->{FN_FILEDB}->();
 
     my $aPlayIds= $dbFile->getAllPlayIds();
