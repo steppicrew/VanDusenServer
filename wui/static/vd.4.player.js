@@ -150,8 +150,35 @@ jQuery(function($) {
     };
 
     var setup= function(status, mp3_url, ogg_url, fn_getPlaylist, fn_loadPlaylist) {
-        _mp3_url= mp3_url;
-        _ogg_url= ogg_url;
+        var buildUrl= function(url) {
+            var protocol= 'http';
+            var host= window.location.hostname;
+            var port= undefined;
+            var parts= url.split('://');
+            if (parts.length > 1) {
+                protocol= parts.shift() || protocol;
+            }
+            parts= parts[0].split(':');
+            if (parts.length > 1) {
+                port= parts.pop();
+                parts= [parts.join(':')];
+            }
+            if (parts[0] !== '') {
+                host= parts[0];
+            }
+            if (port) {
+                if (port == 80 && protocol == 'http' || port == 443 && protocol == 'https') {
+                    port= '';
+                }
+                else {
+                    port= ':' + port;
+                }
+            }
+            return protocol + '://' + host + port
+        }
+
+        _mp3_url= buildUrl(mp3_url);
+        _ogg_url= buildUrl(ogg_url);
         _player_status= {};
         Util.forEach(_player_status_types, function(type, status_type) {
             var value= status[status_type];

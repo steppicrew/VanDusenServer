@@ -263,7 +263,7 @@ sub _encode {
     die "Don't know what to encode: '$param'";
 }
 
-sub _error {
+sub _errorReadOnly {
     my $self= shift;
     my $data= shift || {error => 'Read only mode'};
 
@@ -326,10 +326,11 @@ sub _cmd_getGlobalData {
 sub _cmd_setFileLastPlayed {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sMd5= $self->{data}{md5};
     $filedb->playFile($sMd5);
+    return $self->_buildJson({});
 }
 
 sub _cmd_setLastPlaylist {
@@ -354,7 +355,7 @@ sub _cmd_setRating {
     my $self= shift;
 
     my $iPlayId= $self->{data}{play_id};
-    return $self->_error($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
+    return $self->_errorReadOnly($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
 
     my $iNewRating= $self->{data}{rating};
 
@@ -396,11 +397,11 @@ sub _cmd_setDetails {
     my $sType= $self->{data}{type};
 
     if ($sType eq 'file') {
-        return $self->_error($filedb->getFileDetails($self->{data}{md5})) if $self->{readonly};
+        return $self->_errorReadOnly($filedb->getFileDetails($self->{data}{md5})) if $self->{readonly};
         return $self->_buildJson($filedb->setFileDetails($self->{data}{md5}, $self->{data}{data}));
     }
     elsif ($sType eq 'play') {
-        return $self->_error($filedb->getPlayDetails($self->{data}{play_id})) if $self->{readonly};
+        return $self->_errorReadOnly($filedb->getPlayDetails($self->{data}{play_id})) if $self->{readonly};
         return $self->_buildJson($filedb->setPlayDetails($self->{data}{play_id}, $self->{data}{data}));
     }
 }
@@ -408,7 +409,7 @@ sub _cmd_setDetails {
 sub _cmd_setExtendedFileDetails {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sMd5= $self->{data}{md5};
     my $hData= $self->{data}{data};
@@ -420,7 +421,7 @@ sub _cmd_setPlaysFileOrder {
     my $self= shift;
 
     my $iPlayId= $self->{data}{play_id};
-    return $self->_error($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
+    return $self->_errorReadOnly($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
 
     my $hOrder= $self->{data}{order};
 
@@ -457,7 +458,7 @@ sub _cmd_getPlaylists {
 sub _cmd_createPlaylist {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sName= $self->{data}{name};
     return $self->_buildJson($filedb->createPlaylist($sName));
@@ -466,7 +467,7 @@ sub _cmd_createPlaylist {
 sub _cmd_renamePlaylist {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $sNewName= $self->{data}{newname};
@@ -476,7 +477,7 @@ sub _cmd_renamePlaylist {
 sub _cmd_savePlaylistOrder {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $hOrder= $self->{data}{order};
@@ -486,7 +487,7 @@ sub _cmd_savePlaylistOrder {
 sub _cmd_deletePlaylist {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     return $self->_buildJson($filedb->deletePlaylist($sPlaylistId));
@@ -495,7 +496,7 @@ sub _cmd_deletePlaylist {
 sub _cmd_addToPlaylist {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};
@@ -505,7 +506,7 @@ sub _cmd_addToPlaylist {
 sub _cmd_removeFromPlaylist {
     my $self= shift;
 
-    return $self->_error() if $self->{readonly};
+    return $self->_errorReadOnly() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};

@@ -2,8 +2,9 @@
 
 basedir = base_dir_to_plays
 
-mp3url = http://base_url_to_fetch_plays_may_be_a_file_system_path
-oggurl = http://base_url_to_fetch_plays_may_be_a_file_system_path
+# if you omit the hostname, the current's server name will be used
+mp3url = http://base_url_to_fetch_plays_may_be_a_file_system_path:port
+oggurl = http://base_url_to_fetch_plays_may_be_a_file_system_path:port
 
 hoerdatdb = path_to_hoerdat.db
 md5db = path_to_md5.db
