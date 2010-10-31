@@ -11,3 +11,10 @@ fulltextdb = path_to_fulltext.db
 
 # set to one to prevent all write access
 readonly = 1
+
+# simple user access control - if not set, no access control
+# ':', '|' and '\' hav to be escaped with preceding '\' (other escapes are optional)
+# users = [username]::[group]::[password]||...
+# groups: 1: admin (with change rights)
+#         0: standard user (read only)
+users = admin::1::top-secret||user::0::less-secret

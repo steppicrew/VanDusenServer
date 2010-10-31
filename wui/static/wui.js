@@ -158,6 +158,7 @@ jQuery(function($) {
     }
 
     $(function() {
+        if ($('#player').length == 0) return;
         $('html').attr('mode', 'player');
         // fill player witch empty info
         Util.setHtml($('#player .info'), (Item.create()).itemHtml());

@@ -28,6 +28,7 @@ my $conf= Conf->new(
         timeout    => undef,
         readonly   => undef,
         timeout    => 31_536_000,
+        users      => undef,
     }
 );
 
@@ -36,7 +37,7 @@ my $filedb= FileDB->new($conf);
 my @sPlayerStatus= ('repeat', 'shuffle', 'stop-after', 'playlist-id', 'item-uid', 'time-mode');
 
 my %aSessions= ();
-my $iSessionTimeout= 3_600;
+my $iSessionTimeout= 5 * 3_600;
 
 sub new {
     my $class= shift;
@@ -46,7 +47,7 @@ sub new {
 
     my $self= {
         path => $httpData{path},
-        cmd => $httpData{params}{cmd} || 'index',
+        cmd => $httpData{params}{cmd},
         callback => $httpData{params}{callback},
         # cookies starting with "a_" are interpreted as arrays
         cookies => { map {
@@ -60,12 +61,15 @@ sub new {
 #        session => undef,
         cgi => CGI->new(),
         debug => $httpData{debug},
+        readonly => $conf->get('users') ? 1 : 0,
     };
 
     bless $self, $class;
     $self->{data}= $self->_encode(decode_json($httpData{params}{data})) if $httpData{params}{data};
 
     $self->{cmds}= {
+        'login'                 => sub { $self->_cmd_login() },
+        'index'                 => sub { $self->_cmd_getIndex() },
         'add-to-playlist'       => sub { $self->_cmd_addToPlaylist() },
         'create-playlist'       => sub { $self->_cmd_createPlaylist() },
         'delete-playlist'       => sub { $self->_cmd_deletePlaylist() },
@@ -74,7 +78,6 @@ sub new {
         'getglobaldata'         => sub { $self->_cmd_getGlobalData() },
         'getplaylist'           => sub { $self->_cmd_getPlaylist() },
         'getplaylists'          => sub { $self->_cmd_getPlaylists() },
-        'index'                 => sub { $self->_cmd_getIndex() },
         'player-status'         => sub { $self->_cmd_setPlayerStatus() },
         'queryhoerdat'          => sub { $self->_cmd_queryHoerdat() },
         'remove-from-playlist'  => sub { $self->_cmd_removeFromPlaylist() },
@@ -120,7 +123,20 @@ sub build {
     }
     $hSession->{cookies}= $self->{cookies};
 
-    my $sub= $self->{cmds}{ $self->{cmd} || '' };
+    my $cmd= $self->{cmd} || 'index';
+
+    if ($conf->get('users') && ! $hSession->{login}) {
+        return $self->_buildPage({
+            title => "VanDusen Player - Login",
+            body => _loginBody(),
+        }) unless $cmd eq 'login';
+    }
+
+    if ($hSession->{login} && $hSession->{login}{admin}) {
+        $self->{readonly}= 0;
+    }
+
+    my $sub= $self->{cmds}{ $cmd };
     return $sub ? $sub->() : ();
 }
 
@@ -247,12 +263,48 @@ sub _encode {
     die "Don't know what to encode: '$param'";
 }
 
+sub _error {
+    my $self= shift;
+    my $data= shift || {error => 'Read only mode'};
+
+    return $self->_buildJson($data);
+}
+
 sub _cmd_getIndex {
     my $self= shift;
 
     return $self->_buildPage({
         title => "VanDusen Player",
         body => _indexBody(),
+    });
+}
+
+sub _cmd_login {
+    my $self= shift;
+
+    my %users= ();
+    map {
+        my ($user, $admin, $password)= map {s/\\(.)/$1/g; $_} split /\:\:/;
+        return unless defined $user && defined $admin && defined $password;
+        $users{$user} = {
+            user => $user,
+            admin => $admin,
+            password => $password,
+        }
+    } split /\|\|/, $conf->get('users');
+
+    my $login= 0;
+
+    if (defined $self->{data}{user}) {
+        my $user= $users{$self->{data}{user}};
+        if ($user && $user->{password} eq $self->{data}{password}) {
+            my $hSession= $self->_getSession();
+            $hSession->{login}= $user;
+            $login= 1
+        }
+    }
+    return $self->_buildJson({
+        'success' => $login,
     });
 }
 
@@ -274,10 +326,10 @@ sub _cmd_getGlobalData {
 sub _cmd_setFileLastPlayed {
     my $self= shift;
 
-    my $sMd5= $self->{data}{md5};
-    $filedb->playFile($sMd5),
+    return $self->_error() if $self->{readonly};
 
-    return $self->_buildJson({});
+    my $sMd5= $self->{data}{md5};
+    $filedb->playFile($sMd5);
 }
 
 sub _cmd_setLastPlaylist {
@@ -302,9 +354,11 @@ sub _cmd_setRating {
     my $self= shift;
 
     my $iPlayId= $self->{data}{play_id};
+    return $self->_error($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
+
     my $iNewRating= $self->{data}{rating};
 
-    return $self->_buildJson( $filedb->setRating($iPlayId, $iNewRating) );
+    return $self->_buildJson($filedb->setRating($iPlayId, $iNewRating));
 }
 
 sub _cmd_getFileData {
@@ -342,19 +396,19 @@ sub _cmd_setDetails {
     my $sType= $self->{data}{type};
 
     if ($sType eq 'file') {
-        return $self->_buildJson(
-            $filedb->setFileDetails($self->{data}{md5}, $self->{data}{data}),
-        );
+        return $self->_error($filedb->getFileDetails($self->{data}{md5})) if $self->{readonly};
+        return $self->_buildJson($filedb->setFileDetails($self->{data}{md5}, $self->{data}{data}));
     }
     elsif ($sType eq 'play') {
-        return $self->_buildJson(
-            $filedb->setPlayDetails($self->{data}{play_id}, $self->{data}{data}),
-        );
+        return $self->_error($filedb->getPlayDetails($self->{data}{play_id})) if $self->{readonly};
+        return $self->_buildJson($filedb->setPlayDetails($self->{data}{play_id}, $self->{data}{data}));
     }
 }
 
 sub _cmd_setExtendedFileDetails {
     my $self= shift;
+
+    return $self->_error() if $self->{readonly};
 
     my $sMd5= $self->{data}{md5};
     my $hData= $self->{data}{data};
@@ -366,6 +420,8 @@ sub _cmd_setPlaysFileOrder {
     my $self= shift;
 
     my $iPlayId= $self->{data}{play_id};
+    return $self->_error($filedb->getPlayDetails($iPlayId)) if $self->{readonly};
+
     my $hOrder= $self->{data}{order};
 
     return $self->_buildJson($filedb->setPlaysFileOrder($iPlayId, $hOrder));
@@ -401,12 +457,16 @@ sub _cmd_getPlaylists {
 sub _cmd_createPlaylist {
     my $self= shift;
 
+    return $self->_error() if $self->{readonly};
+
     my $sName= $self->{data}{name};
     return $self->_buildJson($filedb->createPlaylist($sName));
 }
 
 sub _cmd_renamePlaylist {
     my $self= shift;
+
+    return $self->_error() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $sNewName= $self->{data}{newname};
@@ -416,6 +476,8 @@ sub _cmd_renamePlaylist {
 sub _cmd_savePlaylistOrder {
     my $self= shift;
 
+    return $self->_error() if $self->{readonly};
+
     my $sPlaylistId= $self->{data}{playlist_id};
     my $hOrder= $self->{data}{order};
     return $self->_buildJson($filedb->savePlaylistOrder($sPlaylistId, $hOrder));
@@ -424,12 +486,16 @@ sub _cmd_savePlaylistOrder {
 sub _cmd_deletePlaylist {
     my $self= shift;
 
+    return $self->_error() if $self->{readonly};
+
     my $sPlaylistId= $self->{data}{playlist_id};
     return $self->_buildJson($filedb->deletePlaylist($sPlaylistId));
 }
 
 sub _cmd_addToPlaylist {
     my $self= shift;
+
+    return $self->_error() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};
@@ -438,6 +504,8 @@ sub _cmd_addToPlaylist {
 
 sub _cmd_removeFromPlaylist {
     my $self= shift;
+
+    return $self->_error() if $self->{readonly};
 
     my $sPlaylistId= $self->{data}{playlist_id};
     my $aPlays= $self->{data}{plays};
@@ -576,6 +644,42 @@ sub _indexBody {
         <div id="json-busy">
             working...
         </div>
+    ';
+}
+
+sub _loginBody {
+    return '
+        <div class="error">
+        </div>
+        <form id="login">
+            <table>
+                <tr><td>Name:</td><td><input type="text" name="user" id="user" /></td></tr>
+                <tr><td>Passwort:</td><td><input type="password" name="password" id="password" /></td></tr>
+                <tr><td colspan="2"><input type="submit" value="Login" /></td></tr>
+            </table>
+        </form>
+        <script>
+            $(function() {
+                $("form#login").submit(function() {
+                    VD.Util.doJsonRequest(
+                        "login",
+                        {
+                            user: $("input#user").val(),
+                            password:$("input#password").val(),
+                        },
+                        null,
+                        function(data) {
+                            if (parseInt(data.success)) {
+                                window.location.reload();
+                                return;
+                            }
+                            $(".error").html("Login Fehlgeschlagen!");
+                        }
+                    );
+                    return false;
+                })
+            });
+        </script>
     ';
 }
 
