@@ -10,6 +10,8 @@ use URI::Escape;
 use Digest::MD5 qw(md5_hex);
 use POSIX;
 
+use Data::Dumper;
+
 use Conf;
 
 my $conf= Conf->new(
@@ -84,6 +86,44 @@ sub pidRunning {
     return 0;
 }
 
+sub buildUrl {
+    my $url= shift;
+    my $request= shift;
+
+    my $protocol= 'http';
+    my $host= $request->header('host');
+    $host=~ s/\:.+//;
+    my $port= '';
+    my $path= '';
+
+    my @parts= split /\:\/\//, $url;
+    if (scalar @parts > 1) {
+        $protocol= shift(@parts) || $protocol;
+    }
+    @parts= split /\//, $parts[0];
+    my $hostport= shift @parts;
+    if (scalar @parts) {
+        $path= join '/', @parts;
+    }
+    @parts= split /\:/, $hostport;
+    if (scalar @parts > 1) {
+        $port= pop @parts;
+        @parts= (join ':', @parts);
+    }
+    if ($parts[0] ne '') {
+        @parts=
+        $host= $parts[0];
+    }
+    if ($port) {
+        if ($port == 80 && $protocol eq 'http' || $port == 443 && $protocol eq 'https') {
+            $port= '';
+        }
+        else {
+            $port= ":$port";
+        }
+    }
+    return "$protocol://$host$port/$path";
+}
 
 # Spawn a web server on port 8081 of all interfaces.
 POE::Component::Server::TCP->new(
@@ -172,7 +212,7 @@ POE::Component::Server::TCP->new(
         $heap->{file_name}= $sOutFile;
         if (-f $sOutFile) {
             `touch "$sOutFile"`;
-            my $sRedirectBase= $conf->get('redirectbase');
+            my $sRedirectBase= buildUrl($conf->get('redirectbase'), $request);
             if ($sRedirectBase) {
                 my $response = HTTP::Response->new(303);
                 my $sBaseName= $sOutFile;

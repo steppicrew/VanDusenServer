@@ -6,4 +6,5 @@ tempcount = 20
 port = 8081
 
 # if set, already converted files will be served from this url
-redirectbase = http://stepdusen.local.steppicrew.de/temp
+# if hostname is omitted, requests hostname will be user
+redirectbase = http://[hostname]/[path]
