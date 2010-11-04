@@ -110,8 +110,7 @@ sub buildUrl {
         $port= pop @parts;
         @parts= (join ':', @parts);
     }
-    if ($parts[0] ne '') {
-        @parts=
+    if (defined $parts[0] && $parts[0] ne '') {
         $host= $parts[0];
     }
     if ($port) {
