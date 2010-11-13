@@ -40,6 +40,7 @@ sub new {
             timeout    => undef,
             readonly   => undef,
             timeout    => 31_536_000,
+            users      => undef,
         }
     );
 
