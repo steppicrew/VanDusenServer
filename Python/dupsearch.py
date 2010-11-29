@@ -9,11 +9,11 @@ from Config import Config
 import os
 
 def __main__():
-    logger = Logger()
-    logger.set_debug_level('debug')
-
     config= Config()
     u_base_path = config.base_path
+
+    logger = Logger(config.ftp_log_path)
+    logger.set_debug_level('info')
 
     dupmerge = DupMerge(
         config.md5_db_path,  u_base_path,
@@ -22,17 +22,21 @@ def __main__():
 
     ftp = FTPFetch(
         host = config.ftp_hostname,
+        port = config.ftp_port,
         user = config.ftp_username,
         passwd = config.ftp_password,
         params = {
             'dstdir': config.ftp_base_path,
             'db': config.ftp_db_path,
             'ignore': config.ftp_ignore_list,
+            'possible_hidden_dirs': config.ftp_possible_hidden_dirs,
             'dupmerge': dupmerge,
             'reverse': 0,
+            'old_cleanup': 1,
             'logger': logger,
         }
     )
+
     ftp.link_all_duplicates()
 
 __main__()

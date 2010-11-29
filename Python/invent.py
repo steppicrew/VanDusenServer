@@ -27,6 +27,7 @@ def __main__():
                 '^' + u_base_path + '/lost\+found',
                 '^' + config.ftp_log_path,
                 '^' + u_base_path + '/scripts',
+                '^' + u_base_path + '/temp',
                 '^' + u_base_path + '/txt',
                 '\.tmp$',
                 '\.tmp\.\d+$',
