@@ -167,10 +167,8 @@ jQuery(function($) {
             if (log) console.log('POST', post.cmd, post.data)
             $.ajax({
                 type: 'POST',
-                url: '#',
                 data: {
                     cmd: post.cmd,
-//                    data: $.toJSON(post.data),
                     data: JSON.stringify(post.data),
                 },
                 dataType: 'json',

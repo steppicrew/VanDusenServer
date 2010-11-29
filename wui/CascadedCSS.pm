@@ -47,15 +47,15 @@ sub render {
         $sLine.= $sOrigLine;
         $sLine=~ s/\s+$//;
         $sLine=~ s/\s+/ /g;
-        $sLine=~ s/\/\/.*//s;
         while (1) {
             $sLine=~ s/^\s+//;
             last if $sLine eq '';
-#print "[$sLine]\n";
             next if $sLine=~ s/\/\*.*?\*\///g;
-            
+            last if $sLine=~ /\/\*/;
+            last if $sLine=~ s/\/\/.*//s;
+
             # opening css
-            if ($sLine=~ s/^([\w\*\.\#\:\[\]\(\)\~\=\"\-\,\>\+\s]+?)\s*\{//) {
+            if ($sLine=~ s/^([\w\*\.\#\:\[\]\(\)\~\=\"\-\,\>\+\s\@]+?)\s*\{//) {
                 push @currentContext, [split /\s*\,\s*/, $1];
                 $sContext= $self->_buildContext(@currentContext);
                 next;
@@ -67,7 +67,7 @@ sub render {
                 next;
             }
             # standard property
-            my $re= qr/^([\w\-]+)\s*\:\s*([\w\s\'\"\\\/\(\)\-\+\.\%\#\=\!\,]+)/;
+            my $re= qr/^([\w\-]+)\s*\:\s*([\w\s\'\"\\\/\(\)\-\+\.\%\#\=\!\,\:]+)/;
             if ($sLine=~ s/$re\;// || $sLine=~ s/$re\}/\}/) {
                 unless (defined $sContext) {
                     $self->_error("Properties '$1: $2' are in no context", $sOrigLine, $iLineNum);

@@ -182,11 +182,11 @@ sub _buildPage {
     my $pageData= shift;
 
     my @scripts= (
-#        { type => 'application/javascript', src => '/static/jquery-1.3.2.js'},
-        { type => 'application/javascript', src => '/static/jquery-1.3.2.min.js'},
-        { type => 'application/javascript', src => '/static/jquery-ui-1.7.2.custom.min.js'},
-        { type => 'application/javascript', src => '/static/jquery.marquee-0.1.js'},
-        { type => 'application/javascript', src => '/static/jquery.jplayer.min.js'},
+        { type => 'application/javascript', src => '/static/jquery.js'},
+        { type => 'application/javascript', src => '/static/jquery-ui.js'},
+        { type => 'application/javascript', src => '/static/jquery.marquee.js'},
+        { type => 'application/javascript', src => '/static/jquery.jplayer.js'},
+#        { type => 'application/javascript', src => '/static/jquery.mobile.js'},
     );
     push @scripts, { type => 'application/javascript', code => '
         (function() {
@@ -215,7 +215,8 @@ sub _buildPage {
                     -title => $pageData->{title} || 'unknown',
                     -style => [
                         { src => '/static/all.css' },
-                        { src => '/static/css/jquery-ui-1.7.2.custom.css' },
+                        { src => '/static/css/jquery-ui.css' },
+#                        { src => '/static/css/jquery.mobile.css' },
                     ],
                     -encoding => 'utf-8',
                     -script => [ @scripts ],
@@ -660,7 +661,7 @@ sub _loginBody {
             </table>
         </form>
         <script>
-            $(function() {
+            jQuery(function($) {
                 $("form#login").submit(function() {
                     VD.Util.doJsonRequest(
                         "login",
