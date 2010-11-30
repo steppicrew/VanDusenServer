@@ -1,0 +1,8 @@
+dev-perl/libwww-perl
+dev-perl/JSON-XS
+dev-perl/MP3-Info
+dev-perl/MD5
+dev-perl/DBD-SQLite
+dev-perl/POE
+www-servers/nginx
+media-video/ffmpeg2theora
