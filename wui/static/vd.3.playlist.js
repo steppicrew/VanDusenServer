@@ -3,7 +3,7 @@
 //     Playlist Module
 // ============================================================================
 
-jQuery(function($) {
+jQuery(function($, undefined) {
 
     VD.Playlist= (function() {
 

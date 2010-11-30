@@ -1,5 +1,5 @@
 
-jQuery(function($) {
+jQuery(function($, undefined) {
 
 // ============================================================================
 //      Import Modules
@@ -157,7 +157,7 @@ jQuery(function($) {
         };
     }
 
-    $(function() {
+    $(function($, undefined) {
         if ($('#player').length == 0) return;
         $('html').attr('mode', 'player');
         // fill player witch empty info

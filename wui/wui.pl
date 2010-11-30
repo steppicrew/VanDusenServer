@@ -70,6 +70,8 @@ while ($conn = $d->accept) {
         my $path= $request->uri->path;
         my $params;
 
+        my $mobile= $request->header('host')=~ /^m(obile)?\./;
+
         print "Requested: [$path]\n" if $opt_debug;
         # print Dumper($request);
 
@@ -128,6 +130,7 @@ while ($conn = $d->accept) {
                 params => $params,
                 cookies => scalar $request->header('cookie'),
                 debug => $opt_debug,
+                mobile => $mobile,
             )->build();
             # print Dumper($request, $hHeader);
             # print $content, "\n";

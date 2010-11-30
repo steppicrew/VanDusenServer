@@ -2,7 +2,7 @@
 //     VLC Player Library
 // ============================================================================
 
-jQuery(function($) {
+jQuery(function($, undefined) {
 
     VD.Player= (function() {
 

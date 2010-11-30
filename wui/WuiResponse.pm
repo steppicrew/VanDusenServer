@@ -62,6 +62,7 @@ sub new {
         cgi => CGI->new(),
         debug => $httpData{debug},
         readonly => $conf->get('users') ? 1 : 0,
+        mobile => $httpData{mobile},
     };
 
     bless $self, $class;
@@ -186,8 +187,8 @@ sub _buildPage {
         { type => 'application/javascript', src => '/static/jquery-ui.js'},
         { type => 'application/javascript', src => '/static/jquery.marquee.js'},
         { type => 'application/javascript', src => '/static/jquery.jplayer.js'},
-#        { type => 'application/javascript', src => '/static/jquery.mobile.js'},
     );
+    push @scripts, { type => 'application/javascript', src => '/static/jquery.mobile.js'} if $self->{mobile};
     push @scripts, { type => 'application/javascript', code => '
         (function() {
             if (typeof console === "undefined") console= {}
@@ -197,12 +198,20 @@ sub _buildPage {
                     console[c[i]]=function() {}
                 }
             }
+            if (typeof VD === "undefined") VD= {};
+            VD.mobile= ' . ($self->{mobile} ? 'true' : 'false') . ';
         })()
     ' };
     push @scripts, { type => 'application/javascript', code => $pageData->{script} } if $pageData->{script};
-    for my $script (glob('static/vd.*.js'), 'static/wui.js') {
+    for my $script (glob("static/vd.*.js"), 'static/wui.js') {
         push @scripts, { type => 'application/javascript', src => '/' . $script };
     }
+
+    my @css= (
+        { src => '/static/css/all.css' },
+        { src => '/static/css/jquery-ui.css' },
+    );
+    push @css, { src => '/static/css/jquery.mobile.css' }, { src => '/static/css/mobile.css' } if $self->{mobile};
 
     return
         {
@@ -213,11 +222,7 @@ sub _buildPage {
             $self->{cgi}->start_html(
                 {
                     -title => $pageData->{title} || 'unknown',
-                    -style => [
-                        { src => '/static/all.css' },
-                        { src => '/static/css/jquery-ui.css' },
-#                        { src => '/static/css/jquery.mobile.css' },
-                    ],
+                    -style => [ @css ],
                     -encoding => 'utf-8',
                     -script => [ @scripts ],
                     -lang => 'de-DE',

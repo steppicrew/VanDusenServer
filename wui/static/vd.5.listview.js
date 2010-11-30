@@ -3,7 +3,7 @@
 //     Itemview handling Library
 // ============================================================================
 
-jQuery(function($) {
+jQuery(function($, undefined) {
 
     VD.Listview= (function() {
 

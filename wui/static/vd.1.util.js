@@ -3,7 +3,7 @@
 //      Utility Library
 // ============================================================================
 
-jQuery(function($) {
+jQuery(function($, undefined) {
 
     if (typeof VD === 'undefined') VD= {};
 
