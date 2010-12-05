@@ -62,7 +62,7 @@ sub new {
         cgi => CGI->new(),
         debug => $httpData{debug},
         readonly => $conf->get('users') ? 1 : 0,
-        mobile => $httpData{mobile},
+        mobile => $httpData{mobile} || 1,
     };
 
     bless $self, $class;
@@ -184,7 +184,7 @@ sub _buildPage {
 
     my @scripts= (
         { type => 'application/javascript', src => '/static/jquery.js'},
-        { type => 'application/javascript', src => '/static/jquery-ui.js'},
+#        { type => 'application/javascript', src => '/static/jquery-ui.js'},
         { type => 'application/javascript', src => '/static/jquery.marquee.js'},
         { type => 'application/javascript', src => '/static/jquery.jplayer.js'},
     );
@@ -209,7 +209,8 @@ sub _buildPage {
 
     my @css= (
         { src => '/static/css/all.css' },
-        { src => '/static/css/jquery-ui.css' },
+#        { src => '/static/css/jquery-ui.css' },
+        { src => '/static/css/jquery-icons.css' },
     );
     push @css, { src => '/static/css/jquery.mobile.css' }, { src => '/static/css/mobile.css' } if $self->{mobile};
 
@@ -536,121 +537,159 @@ sub _cmd_search {
 }
 
 sub _indexBody {
+    my $sNavi= '
+        <div data-role="controlgroup" data-type="horizontal">
+            <a href="#page-player" data-role="button">Player</a>
+            <a href="#page-pl-player" data-role="button">Playlist</a>
+            <a href="#page-pl-source" data-role="button">Quelle</a>
+            <a href="#page-pl-target" data-role="button">Ziel</a>
+        </div>
+    ';
     return '
-        <div id="body-c">
-            <div id="body">
-                <div class="embed">
-                    <div id="jquery_jplayer"></div>
-                </div>
+        <div class="embed">
+            <div id="jquery_jplayer"></div>
+        </div>
+        <div data-role="page" id="page-player">
+            <div data-role="header">
+                <h1>Player</h1>
+            </div>
+            <div data-role="content">
                 <div id="player" class="container" state="stopped">
                     <div class="info">
                     </div>
                     <div class="progress">
-                        <div class="progressbar"></div>
+                        <input type="range" id="progressbar" value="0" min="0" max="100"  />
                     </div>
-                    <ul class="playctl ui-widget ui-helper-clearfix">
-                        <li class="play play-pause ui-state-default ui-corner-all ui-state-disabled">
-                            <span class="ui-icon ui-icon-play"></span>
-                        </li>
-                        <li class="pause play-pause ui-state-default ui-corner-all ui-state-disabled">
-                            <span class="ui-icon ui-icon-pause"></span>
-                        </li>
-                        <li class="prev ui-state-default ui-corner-all ui-state-disabled">
-                            <span class="ui-icon ui-icon-seek-first"></span>
-                        </li>
-                        <li class="next ui-state-default ui-corner-all ui-state-disabled">
-                            <span class="ui-icon ui-icon-seek-end"></span>
-                        </li>
-                        <li class="repeat ui-state-default ui-corner-all">
-                            <span class="ui-icon ui-icon-refresh" title="Playlist wiederholen"></span>
-                        </li>
-                        <li class="shuffle ui-state-default ui-corner-all">
-                            <span class="ui-icon ui-icon-shuffle" title="Zufallsreihenfolge"></span>
-                        </li>
-                        <li class="stop-after ui-state-default ui-corner-all">
-                            <span class="ui-icon ui-icon-arrowstop-1-e" title="Nach diesem Titel anhalten"></span>
-                        </li>
-                    </ul>
+                    <div class="playctl" data-role="controlgroup" data-type="horizontal">
+                        <a href="#" class="play play-pause my-icon" data-role="button" data-icon="play" data-iconpos="notext"></a>
+                        <a href="#" class="pause play-pause my-icon" data-role="button" data-icon="pause" data-iconpos="notext"></a>
+                        <a href="#" class="prev my-icon" data-role="button" data-icon="seek-first" data-iconpos="notext"></a>
+                        <a href="#" class="next my-icon" data-role="button" data-icon="seek-end" data-iconpos="notext"></a>
+                        <a href="#" class="repeat my-icon" data-role="button" data-icon="refresh" data-iconpos="notext"></a>
+                        <a href="#" class="shuffle my-icon" data-role="button" data-icon="shuffle" data-iconpos="notext"></a>
+                        <a href="#" class="stop-after my-icon" data-role="button" data-icon="arrowstop-1-e" data-iconpos="notext"></a>
+                    </div>
                 </div>
+            </div><!-- content -->
+            <div data-role="footer">
+                ' . $sNavi . '
+            </div>
+        </div>
+        <div data-role="page" id="page-pl-player">
+            <div data-role="header">
+                <h1>Playlist</h1>
+            </div>
+            <div data-role="content">
+                <div id="list-player"></div>
+            </div><!-- content -->
+            <div data-role="footer">
+                ' . $sNavi . '
+            </div>
+        </div>
+        <div data-role="page" id="page-pl-source">
+            <div data-role="header">
+                <h1>Quelle</h1>
+            </div>
+            <div data-role="content">
+                <div id="list-source"></div>
+            </div><!-- content -->
+            <div data-role="footer">
+                ' . $sNavi . '
+            </div>
+        </div>
+        <div data-role="page" id="page-pl-target">
+            <div data-role="header">
+                <h1>Ziel</h1>
+            </div>
+            <div data-role="content">
+                <div id="list-target"></div>
+            </div><!-- content -->
+            <div data-role="footer">
+                ' . $sNavi . '
+            </div>
+        </div>
+        <div data-role="page" id="dialog-info">
+            <div data-role="header">
+                <h1>Info</h1>
+            </div>
+            <div id="dialog-iteminfo" data-role="content">
+                <div class="iteminfo">
+                </div>
+            </div><!-- content -->
+        </div>
+        <div data-role="page" id="dialog-edit">
+            <div data-role="header">
+                <h1>Bearbeiten</h1>
+            </div>
+            <div id="edit-item" data-role="content">
+                <div id="edit-itemdetails">
+                </div>
+            </div><!-- content -->
+        </div>
+        <div data-role="page" id="dialog-pl-edit">
+            <div data-role="header">
+                <h1>Playlist-Edit</h1>
+            </div>
+            <div id="edit-playlist" data-role="content">
+                <div id="pl-edit">
+                </div>
+            </div><!-- content -->
+        </div>
+        <div data-role="page" id="dialog-pl-operation">
+            <div data-role="header">
+                <h1>Playlist</h1>
+            </div>
+            <div id="playlist-operation" data-role="content">
+                <div id="operation">
+                    <select id="playlistselect">
+                    </select>
+                    <div class="playlistop" data-role="controlgroup" data-type="horizontal">
+                        <a href="" class="pl-new my-icon" data-role="button" data-icon="document" data-iconpos="notext"></a>
+                        <a href="" class="pl-renamemy-icon" data-role="button" data-icon="pencil" data-iconpos="notext"></a>
+                        <a href="" class="pl-open my-icon" data-role="button" data-icon="filder-open" data-iconpos="notext"></a>
+                        <a href="" class="pl-delete my-icon" data-role="button" data-icon="trash" data-iconpos="notext"></a>
+                        <a href="" class="pl-save my-icon" data-role="button" data-icon="disk" data-iconpos="notext"></a>
+                        <a href="" class="pl-add my-icon" data-role="button" data-icon="plu" data-iconpos="notext"></a>
+                        <a href="" class="pl-remove my-icon" data-role="button" data-icon="minus" data-iconpos="notext"></a>
+                    </div>
+                    <div id="filter">
+                        <input type="range" id="ratingfilter" value="0" min="-1" max="5" />
+                    </div>
+                    <div id="search_c">
+                        <form id="searchform">
+                            <input type="text" id="search" />
+                        </form>
+                    </div>
+                    <div id="selection-op">
+                        <div class="right">
+                            <span class="sort-abc">A&rarr;Z</span>
+                            <span class="sort-orig">orig</span>
+                            <span class="sort-cba">Z&rarr;A</span>
+                            <span class="sort-scramble">mischen</span>
+                        </div>
+                        Auswahl 
+                        <span class="select-all">alle</span>
+                        <span class="select-none">keins</span>
+                        <span class="select-invert">umkehren</span>
+                    </div>
+                </div>
+            </div><!-- content -->
+        </div>
+
+
+        <!--div id="body-c">
+            <div id="body">
                 <div id="input" class="container">
                     <div id="pl-tabs">
-                        <span class="right">&nbsp;</span>
-                        <span class="tab" id="pl-player">Player</span
-                        ><span class="tab" id="pl-source">Quelle</span
-                        ><span class="tab" id="pl-target">Bearbeiten</span>
                     </div>
                     <div id="operation">
-                        <select id="playlistselect">
-                        </select>
-                        <ul id="playlistop" class="ui-widget ui-helper-clearfix">
-                            <li class="pl-new ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-document" title="Neue Playlist erstellen"></span>
-                            </li>
-                            <li class="pl-rename ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-pencil" title="Playlist umbenennen"></span>
-                            </li>
-                            <li class="pl-open ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-folder-open" title="Playlist (erneut) laden"></span>
-                            </li>
-                            <li class="pl-delete ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-trash" title="Playlist l&ouml;schen"></span>
-                            </li>
-                            <li class="pl-save ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-disk" title="H&ouml;rspielreihenfolge in aktueller Playlist speichern"></span>
-                            </li>
-                            <li class="pl-add ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-plus" title="ausgew&auml;hlte H&ouml;rspiele zur Playlist hinzuf&uuml;gen"></span>
-                            </li>
-                            <li class="pl-remove ui-state-default ui-corner-all">
-                                <span class="ui-icon ui-icon-minus" title="ausgew&auml;hlte H&ouml;rspiele aus der Playlist entfernen"></span>
-                            </li>
-                        </ul>
-                        <div id="filter">
-                            <div id="ratingfilter"></div>
-                        </div>
-                        <div id="search_c">
-                            <form id="searchform">
-                                <input type="text" id="search" />
-                            </form>
-                        </div>
-                        <div id="selection-op">
-                            <div class="right">
-                                <span class="sort-abc">A&rarr;Z</span>
-                                <span class="sort-orig">orig</span>
-                                <span class="sort-cba">Z&rarr;A</span>
-                                <span class="sort-scramble">mischen</span>
-                            </div>
-                            Auswahl 
-                            <span class="select-all">alle</span>
-                            <span class="select-none">keins</span>
-                            <span class="select-invert">umkehren</span>
-                        </div>
-                    </div>
                     <div id="main-c">
                         <div id="main">
-                            <div id="list-player"></div>
-                            <div id="list-target"></div>
-                            <div id="list-source"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="dialog-iteminfo">
-            <div class="iteminfo">
-            </div>
-        </div>
-        <div id="edit-item">
-            <div id="edit-itemdetails">
-            </div>
-        </div>
-        <div id="edit-playlist">
-            <div class="pl-edit">
-            </div>
-        </div>
-        <div id="json-busy">
-            working...
-        </div>
+        </div-->
     ';
 }
 

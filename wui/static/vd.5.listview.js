@@ -37,9 +37,9 @@ jQuery(function($, undefined) {
     var _tooltip_timeout= 1000;
     var _search_update_timeout= 1000;
 
-    // update cche for some elements
+    // update cache for some elements
     var $dialog_iteminfo= $('#dialog-iteminfo');
-    
+
 // ============================================================================
 //      TBD
 // ============================================================================
@@ -48,6 +48,7 @@ jQuery(function($, undefined) {
 
     // show tooltip on hovering item
     var showItemTooltip= new Util.DelayedFunc(_tooltip_timeout, function(event) {
+        return
         if ($dialog_iteminfo.dialog('isOpen') && $dialog_iteminfo.hasClass('sticky')) return;
 
         Util.setHtml($dialog_iteminfo, '<div class="info-head">lade Info...</div>');
@@ -90,6 +91,7 @@ jQuery(function($, undefined) {
     });
 
     var updateSearch= new Util.DelayedFunc(_search_update_timeout, function(ev) {
+        return
         var playlist= Playlist.getPlaylist('search:' + $('#search').val());
         $('#playlistselect')[0].selectedIndex= -1;
         loadViewPlaylist(playlist);
@@ -369,6 +371,7 @@ jQuery(function($, undefined) {
     };
 
     var onMainScroll= new Util.DelayedFunc(10, function(ev) {
+        return
         if (!getCurrentPlaylist()) return;
 
         var top= $('#main').offset().top - $listSelector('.itemlist').offset().top;

@@ -68,7 +68,7 @@ jQuery(function($, undefined) {
             },
             nativeSupport: true,
 //            oggSupport: _ogg_url ? true : false,
-            oggSupport: true,
+//            oggSupport: true,
             swfPath: '/static/',
         })
 
@@ -94,12 +94,14 @@ jQuery(function($, undefined) {
     var updatePlayerStatusButtons= function() {
         Util.forEach(_player_status_types, function(bt_type, button) {
             if (bt_type !== 'button') return // continue
-            if (_player_status[button]) {
-                _play_button_cache[button].addClass('ui-state-active');
-            }
-            else {
-                _play_button_cache[button].removeClass('ui-state-active');
-            }
+            var old_theme= _play_button_cache[button].attr('data-theme');
+            var new_theme= _player_status[button] ? 'b' : 'c';
+            _play_button_cache[button]
+                .removeClass('ui-btn-up-' + old_theme)
+                .removeClass('ui-btn-down-' + old_theme)
+                .removeClass('ui-btn-hover-' + old_theme)
+                .addClass('ui-btn-up-' + new_theme)
+                .attr('data-theme', new_theme);
         })
     }
 
@@ -153,12 +155,14 @@ jQuery(function($, undefined) {
         var buildUrl= function(url) {
             var protocol= 'http';
             var host= window.location.hostname;
-            var port= undefined;
+            var port= '';
             var parts= url.split('://');
             if (parts.length > 1) {
                 protocol= parts.shift() || protocol;
             }
-            parts= parts[0].split(':');
+            var path= parts[0].split('/');
+            parts= path.shift();
+            parts= parts.split(':');
             if (parts.length > 1) {
                 port= parts.pop();
                 parts= [parts.join(':')];
@@ -174,7 +178,7 @@ jQuery(function($, undefined) {
                     port= ':' + port;
                 }
             }
-            return protocol + '://' + host + port
+            return protocol + '://' + host + port + '/' + path.join('/');
         }
 
         _mp3_url= buildUrl(mp3_url);
@@ -251,7 +255,7 @@ jQuery(function($, undefined) {
         }
 
         // manage player's buttons
-        $('ul.playctl li').live('click', function() {
+        $('.playctl a').live('click', function() {
             if ($(this).hasClass('ui-state-disabled')) return false;
             if ($(this).hasClass('play-pause')) {
                 playPause()
@@ -374,8 +378,9 @@ jQuery(function($, undefined) {
         if (!file) return stop()
 
 //        jPlayer('setFile', _mp3_url + file.get('url'))
-        jPlayer('setFile', _mp3_url + file.get('url'), _ogg_url + file.get('url'))
-//        jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3')
+//        jPlayer('setFile', _mp3_url + file.get('url'), _ogg_url + file.get('url'))
+        jPlayer('setFile', _mp3_url + '/' + Math.floor(Math.random() * 26 + 1) + '.mp3')
+console.log('setFile', _mp3_url + '/' + Math.floor(Math.random() * 26 + 1) + '.mp3')
         jPlayer('play')
 
         file.updateLastPlayed(function() {
