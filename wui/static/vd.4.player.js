@@ -315,12 +315,24 @@ jQuery(function($, undefined) {
             }
         })
 
-        $('#player .progressbar').slider({
-            'max': _slider_max - 1,
-            'slide': function(event, ui) {
-                jPlayer('playHead', ui.value / _slider_max * 100);
-            },
-        }).slider('disable');
+//        var $_progress_elem= $('#player input#progressbar + div.ui-slider a.ui-slider-handle');
+//        $('#player input#progressbar').attr('max', _slider_max - 1).change(function() {
+//            jPlayer('playHead', ($_progress_elem.attr('aria-valuenow') | 0) / _slider_max * 100);
+//console.log(($_progress_elem.attr('aria-valuenow') | 0));
+//        })
+//        $_progress_elem.attr('aria-valuemax', _slider_max - 1);
+
+        $('#player #progressbar')
+            .change(function() {
+                jPlayer('playHead', $(this).val() / ($(this).attr('max') | 0 + 1) * 100);
+            });
+
+//        $('#player .progressbar').slider({
+//            'max': _slider_max - 1,
+//            'slide': function(event, ui) {
+//                jPlayer('playHead', ui.value / _slider_max * 100);
+//            },
+//        }).slider('disable');
 
         Event.add('setRating', function(uid, rating) {
             if (!_playlist) return;

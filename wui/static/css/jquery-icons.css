@@ -184,3 +184,11 @@
     .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
     .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
 }
+
+#player[state=playing] .my-icon .ui-icon-play-pause {
+    background-position: -16px -160px;
+}
+
+#player .my-icon .ui-icon-play-pause {
+    background-position: 0 -160px;
+}

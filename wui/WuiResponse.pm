@@ -537,77 +537,70 @@ sub _cmd_search {
 }
 
 sub _indexBody {
+    my $pages= [
+        {href => 'page-player',    name => 'Player'},
+        {href => 'page-pl-player', name => 'Playlist'},
+        {href => 'page-pl-source', name => 'Quelle'},
+        {href => 'page-pl-target', name => 'Ziel'},
+    ];
+    my $buildPage= sub {
+        my $href= shift;
+        my $content= shift;
+        my $name= ((grep { $_->{href} eq $href } @$pages)[0] || {})->{name} || 'Unknown';
+        my $footer= '';
+        $footer= '<div data-role="navbar">
+                        <ul>
+                            ' . join('', map { '<li><a href="#' . $_->{href} . '" class="' . ($href eq $_->{href} ? 'ui-btn-active' : '') . '">' . $_->{name} . '</a></li>' } @$pages) . '
+                        </ul>
+                    </div>' if $href eq $pages->[0]->{href} || 1;
+        return '
+            <div data-role="page" id="' . $href . '">
+                <div data-role="header">
+                    <h1>' . $name . '</h1>
+                </div>
+                <div data-role="content">'
+                    . $content .
+                '</div><!-- content -->
+                <div data-role="footer">' . $footer . '</div>
+            </div>
+        ';
+    };
     my $sNavi= '
-        <div data-role="controlgroup" data-type="horizontal">
-            <a href="#page-player" data-role="button">Player</a>
-            <a href="#page-pl-player" data-role="button">Playlist</a>
-            <a href="#page-pl-source" data-role="button">Quelle</a>
-            <a href="#page-pl-target" data-role="button">Ziel</a>
-        </div>
     ';
     return '
         <div class="embed">
             <div id="jquery_jplayer"></div>
-        </div>
-        <div data-role="page" id="page-player">
-            <div data-role="header">
-                <h1>Player</h1>
-            </div>
-            <div data-role="content">
+        </div>' .
+            $buildPage->('page-player', '
                 <div id="player" class="container" state="stopped">
                     <div class="info">
                     </div>
                     <div class="progress">
-                        <input type="range" id="progressbar" value="0" min="0" max="100"  />
+                        <input type="range" id="progressbar" value="0" min="0" max="999"  />
                     </div>
                     <div class="playctl" data-role="controlgroup" data-type="horizontal">
-                        <a href="#" class="play play-pause my-icon" data-role="button" data-icon="play" data-iconpos="notext"></a>
-                        <a href="#" class="pause play-pause my-icon" data-role="button" data-icon="pause" data-iconpos="notext"></a>
-                        <a href="#" class="prev my-icon" data-role="button" data-icon="seek-first" data-iconpos="notext"></a>
-                        <a href="#" class="next my-icon" data-role="button" data-icon="seek-end" data-iconpos="notext"></a>
-                        <a href="#" class="repeat my-icon" data-role="button" data-icon="refresh" data-iconpos="notext"></a>
-                        <a href="#" class="shuffle my-icon" data-role="button" data-icon="shuffle" data-iconpos="notext"></a>
-                        <a href="#" class="stop-after my-icon" data-role="button" data-icon="arrowstop-1-e" data-iconpos="notext"></a>
+                        <a href="#" class="play-pause my-icon" data-role="button" data-icon="play-pause"    xdata-iconpos="notext">&nbsp;</a>
+                        <a href="#" class="prev my-icon"       data-role="button" data-icon="seek-first"    xdata-iconpos="notext">&nbsp;</a>
+                        <a href="#" class="next my-icon"       data-role="button" data-icon="seek-end"      xdata-iconpos="notext">&nbsp;</a>
+                        <a href="#" class="repeat my-icon"     data-role="button" data-icon="refresh"       xdata-iconpos="notext">&nbsp;</a>
+                        <a href="#" class="shuffle my-icon"    data-role="button" data-icon="shuffle"       xdata-iconpos="notext">&nbsp;</a>
+                        <a href="#" class="stop-after my-icon" data-role="button" data-icon="arrowstop-1-e" xdata-iconpos="notext">&nbsp;</a>
                     </div>
                 </div>
-            </div><!-- content -->
-            <div data-role="footer">
-                ' . $sNavi . '
-            </div>
-        </div>
-        <div data-role="page" id="page-pl-player">
-            <div data-role="header">
-                <h1>Playlist</h1>
-            </div>
-            <div data-role="content">
+            ')
+        .
+            $buildPage->('page-pl-player', '
                 <div id="list-player"></div>
-            </div><!-- content -->
-            <div data-role="footer">
-                ' . $sNavi . '
-            </div>
-        </div>
-        <div data-role="page" id="page-pl-source">
-            <div data-role="header">
-                <h1>Quelle</h1>
-            </div>
-            <div data-role="content">
+            ')
+        .
+            $buildPage->('page-pl-source', '
                 <div id="list-source"></div>
-            </div><!-- content -->
-            <div data-role="footer">
-                ' . $sNavi . '
-            </div>
-        </div>
-        <div data-role="page" id="page-pl-target">
-            <div data-role="header">
-                <h1>Ziel</h1>
-            </div>
-            <div data-role="content">
+            ')
+        .
+            $buildPage->('page-pl-target', '
                 <div id="list-target"></div>
-            </div><!-- content -->
-            <div data-role="footer">
-                ' . $sNavi . '
-            </div>
-        </div>
+            ')
+        . '
         <div data-role="page" id="dialog-info">
             <div data-role="header">
                 <h1>Info</h1>

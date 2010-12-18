@@ -334,8 +334,12 @@ a {
     }
 
     .progress {
-        margin: 10px 10px 0;
+        margin: 10px 10px 20px 10px;
         font-size: 70%;
+        div.ui-slider {
+            width: 100%;
+            margin: 0;
+        }
     }
 
     ul.playctl {
@@ -353,15 +357,6 @@ a {
         }
     }
 }
-
-#player[state="stopped"] li.pause,
-#player[state="paused"] li.pause {
-    display: none;
-}
-#player[state="playing"] li.play {
-    display: none;
-}
-
 
 // ==========================================================================
 //      itemlist (Über Schieberegler gesteuert)
@@ -548,6 +543,11 @@ a {
 
 html[json=busy] #json-busy {
     display: block;
+}
+
+input[data-type=range].ui-input-text.ui-slider-input {
+    visibility: hidden;
+    position: absolute;
 }
 
 :lang(de-DE) { quotes:"\00AB" "\00BB" "\2039" "\203A"; }
