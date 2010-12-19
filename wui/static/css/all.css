@@ -91,7 +91,7 @@ a {
     height: 100%;
     padding: 1px;
     overflow: auto;
-    display: none;
+//    display: none;
 }
 
 // ==========================================================================
@@ -386,6 +386,9 @@ a {
         background-color: #FFF;
         border-bottom-color: #FFF;
     }
+    #xxxlist-player {
+        display: block;
+    }
 }
 #page-pl-target {
     #pl-target {
@@ -397,7 +400,7 @@ a {
             display: none;
         }
     }
-    #list-target {
+    #xxxlist-target {
         display: block;
     }
 }
@@ -411,7 +414,7 @@ a {
             display: none;
         }
     }
-    #list-source {
+    #xxxlist-source {
         display: block;
     }
 }

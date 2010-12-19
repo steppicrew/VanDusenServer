@@ -48,6 +48,7 @@ jQuery(function($, undefined) {
 
     // show tooltip on hovering item
     var showItemTooltip= new Util.DelayedFunc(_tooltip_timeout, function(event) {
+//XXXXXXXXXXXXXXXXX
         return
         if ($dialog_iteminfo.dialog('isOpen') && $dialog_iteminfo.hasClass('sticky')) return;
 
@@ -325,7 +326,6 @@ jQuery(function($, undefined) {
 
     // views given playlist
     var viewItemlist= function(tab) {
-console.log('viewItemList')
         if (!tab) tab= _playlist_tab;
         var playlist= _playlists[tab];
 
@@ -381,7 +381,7 @@ console.log('viewItemList')
         var height= $listSelector('.itemlist .itemlist-entry:first-child').outerHeight();
 
         // do one element more than actually fits in
-        var remain_height= $('#main').height() + height;
+        var remain_height= $listSelector('.itemlist').height() + height;
 
         var uids= getVisibleUids();
 
@@ -984,12 +984,13 @@ console.log('viewItemList')
                 $(this).removeClass('hover')
                 // hide tooltip
                 showItemTooltip.stop();
-
+return
                 var iteminfo_div= $dialog_iteminfo.find('.iteminfo')[0];
                 if ($dialog_iteminfo.dialog('isOpen') && $dialog_iteminfo.hasClass('sticky')) return;
                 $dialog_iteminfo.dialog('close');
             })
             .live('click', function(event) {
+return
                 if (!$dialog_iteminfo.dialog('isOpen')) return;
                 $dialog_iteminfo.toggleClass('sticky');
             });
