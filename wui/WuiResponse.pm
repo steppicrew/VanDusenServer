@@ -546,6 +546,7 @@ sub _indexBody {
     my $buildPage= sub {
         my $href= shift;
         my $content= shift;
+        my $options= shift;
         my $name= ((grep { $_->{href} eq $href } @$pages)[0] || {})->{name} || 'Unknown';
         my $footer= '';
         $footer= '<div data-role="navbar">
@@ -553,10 +554,22 @@ sub _indexBody {
                             ' . join('', map { '<li><a href="#' . $_->{href} . '" class="' . ($href eq $_->{href} ? 'ui-btn-active' : '') . '">' . $_->{name} . '</a></li>' } @$pages) . '
                         </ul>
                     </div>' if $href eq $pages->[0]->{href} || 1;
+        my $header= '<h1>' . $name . '</h1>';
+        if ($options->{header}) {
+            if ($options->{header}{buttons}) {
+                for my $button (@{$options->{header}{buttons}}) {
+                    my %attribs= (href => $button->{href});
+                    $attribs{'data-icon'}= $button->{icon} if $button->{icon};
+                    $attribs{'data-rel'}= 'dialog' if $button->{dialog};
+                    $attribs{'class'}= $button->{class} if $button->{class};
+                    $header.= '<a ' . join(' ', map { "$_=\"$attribs{$_}\""; } keys %attribs) . '>' . $button->{text} . '</a>'
+                }
+            }
+        }
         return '
             <div data-role="page" id="' . $href . '">
-                <div data-role="header">
-                    <h1>' . $name . '</h1>
+                <div data-role="header" data-position="inline" data-nobackbtn="true">
+                    ' . $header . '
                 </div>
                 <div data-role="content">'
                     . $content .
@@ -591,17 +604,17 @@ sub _indexBody {
         .
             $buildPage->('page-pl-player', '
                 <div id="list-player"></div>
-            ')
+            ', {header=> {buttons=> [{href=> '#dialog-pl-operation', text=> '&Auml;ndern', dialog=> 1, icon=> 'gear', class=> 'ui-btn-right'}]}})
         .
             $buildPage->('page-pl-source', '
                 <div id="list-source"></div>
-            ')
+            ', {header=> {buttons=> [{href=> '#dialog-pl-operation', text=> '&Auml;ndern', dialog=> 1, icon=> 'gear', class=> 'ui-btn-right'}]}})
         .
             $buildPage->('page-pl-target', '
                 <div id="list-target"></div>
-            ')
+            ', {header=> {buttons=> [{href=> '#dialog-pl-operation', text=> '&Auml;ndern', dialog=> 1, icon=> 'gear', class=> 'ui-btn-right'}]}})
         . '
-        <div data-role="page" id="dialog-info">
+        <div data-role="page" id="dialog-info" data-nobackbtn="true">
             <div data-role="header">
                 <h1>Info</h1>
             </div>
@@ -610,7 +623,7 @@ sub _indexBody {
                 </div>
             </div><!-- content -->
         </div>
-        <div data-role="page" id="dialog-edit">
+        <div data-role="page" id="dialog-edit" data-nobackbtn="true">
             <div data-role="header">
                 <h1>Bearbeiten</h1>
             </div>
@@ -619,7 +632,7 @@ sub _indexBody {
                 </div>
             </div><!-- content -->
         </div>
-        <div data-role="page" id="dialog-pl-edit">
+        <div data-role="page" id="dialog-pl-edit" data-nobackbtn="true">
             <div data-role="header">
                 <h1>Playlist-Edit</h1>
             </div>
@@ -628,7 +641,7 @@ sub _indexBody {
                 </div>
             </div><!-- content -->
         </div>
-        <div data-role="page" id="dialog-pl-operation">
+        <div data-role="page" id="dialog-pl-operation" data-nobackbtn="true">
             <div data-role="header">
                 <h1>Playlist</h1>
             </div>
@@ -666,23 +679,9 @@ sub _indexBody {
                         <span class="select-invert">umkehren</span>
                     </div>
                 </div>
+                <a href="javascript:" class="close-dialog">Schlie&szlig;en</a>
             </div><!-- content -->
         </div>
-
-
-        <!--div id="body-c">
-            <div id="body">
-                <div id="input" class="container">
-                    <div id="pl-tabs">
-                    </div>
-                    <div id="operation">
-                    <div id="main-c">
-                        <div id="main">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div-->
     ';
 }
 

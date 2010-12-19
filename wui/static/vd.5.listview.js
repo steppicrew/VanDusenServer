@@ -325,6 +325,7 @@ jQuery(function($, undefined) {
 
     // views given playlist
     var viewItemlist= function(tab) {
+console.log('viewItemList')
         if (!tab) tab= _playlist_tab;
         var playlist= _playlists[tab];
 
@@ -371,10 +372,9 @@ jQuery(function($, undefined) {
     };
 
     var onMainScroll= new Util.DelayedFunc(10, function(ev) {
-        return
         if (!getCurrentPlaylist()) return;
 
-        var top= $('#main').offset().top - $listSelector('.itemlist').offset().top;
+        var top= 0//$('#main').offset().top - $listSelector('.itemlist').offset().top;
         if (top < 0) top= 0;
 
         // the height of a single item
@@ -767,12 +767,12 @@ jQuery(function($, undefined) {
 
     var updateDocumentTitle= function() {
         var playlist= getCurrentPlaylist();
-        if (!playlist) {
-            document.title= '(Keine Playlist ausgewählt)';
-            return;
+        var title= '(Keine Playlist ausgewählt)';
+        if (playlist) {
+            title= 'Playlist "' + playlist.text('name') + '"';
         }
 
-        document.title= 'Playlist "' + playlist.text('name') + '"';
+        $('#page-pl-' + _playlist_tab + ' [data-role=header] h1').text(title);
     };
 
     // selects given playlist
@@ -850,24 +850,16 @@ jQuery(function($, undefined) {
 
     var _init_live= function() {
 
-        $('#pl-tabs span').live('click', function() {
+        $('#page-pl-player, #page-pl-source, #page-pl-target').live('pagebeforeshow', function(event, ui) {
             switch(this.id) {
-                case 'pl-player': _playlist_tab= 'player'; break;
-                case 'pl-target': _playlist_tab= 'target'; break;
-                case 'pl-source': _playlist_tab= 'source'; break;
+                case 'page-pl-player': _playlist_tab= 'player'; break;
+                case 'page-pl-target': _playlist_tab= 'target'; break;
+                case 'page-pl-source': _playlist_tab= 'source'; break;
             }
-
-            // $('html').removeClass('mode-player mode-target mode-source').addClass('mode-' + _playlist_tab);
-
-            $('html').removeClass('dummy').addClass('dummy');
-
-
-            $('html').attr('mode', _playlist_tab);
-            updateDocumentTitle();
+            updateDocumentTitle(this);
             clearCache();
             selectPlaylist();
             updatePlaylistop();
-            onMainScroll.now();
         });
 
         // plays item on dblclick

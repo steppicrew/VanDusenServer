@@ -112,6 +112,18 @@ jQuery(function($, undefined) {
         return processClick(this, href);
     });
 
+/*
+    $('a.open-dialog').click(function() {
+        var href= $(this).attr('href');
+        $(href).dialog();
+        return false;
+    });
+*/
+    $('a.close-dialog').click(function() {
+        $(this).closest('[data-role=dialog]').dialog('close');
+        return false;
+    });
+
     // hover handling for itemlist entries
     $('.marquee').live('mouseover', function(event) {
         $(this).marquee('on');
@@ -181,6 +193,8 @@ jQuery(function($, undefined) {
                 )
             }
         )
+        $('#dialog-info, #dialog-edit, #dialog-pl-edit, #dialog-pl-operation').dialog();
+/*
         $('#edit-item').dialog({
             'autoOpen': false,
             'modal': true,
@@ -205,6 +219,7 @@ jQuery(function($, undefined) {
             'autoOpen': false,
             'modal': true,
         });
+*/
     });
 
 
