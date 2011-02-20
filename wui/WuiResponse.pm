@@ -29,6 +29,7 @@ my $conf= Conf->new(
         readonly   => undef,
         timeout    => 31_536_000,
         users      => undef,
+        pingsemaphore => undef,
     }
 );
 
@@ -71,6 +72,7 @@ sub new {
     $self->{cmds}= {
         'login'                 => sub { $self->_cmd_login() },
         'index'                 => sub { $self->_cmd_getIndex() },
+        'ping'                  => sub { $self->_cmd_ping() },
         'add-to-playlist'       => sub { $self->_cmd_addToPlaylist() },
         'create-playlist'       => sub { $self->_cmd_createPlaylist() },
         'delete-playlist'       => sub { $self->_cmd_deletePlaylist() },
@@ -130,7 +132,7 @@ sub build {
         return $self->_buildPage({
             title => "VanDusen Player - Login",
             body => _loginBody(),
-        }) unless $cmd eq 'login';
+        }) unless $cmd eq 'login' || $cmd eq 'ping';
     }
 
     if ($hSession->{login} && $hSession->{login}{admin}) {
@@ -311,6 +313,26 @@ sub _cmd_login {
     }
     return $self->_buildJson({
         'success' => $login,
+    });
+}
+
+sub _cmd_ping {
+    my $self= shift;
+
+    my $result= "ok";
+    if ($conf->get('pingsemaphore')) {
+        my $fh;
+        if (open($fh, ">", $conf->get('pingsemaphore'))) {
+            print $fh "ping";
+            close $fh;
+        }
+        else {
+            $result= "failed";
+        }
+    }
+
+    return $self->_buildJson({
+        'ping' => 'ok',
     });
 }
 
