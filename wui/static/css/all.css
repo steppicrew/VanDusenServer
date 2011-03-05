@@ -456,7 +456,7 @@ a {
 //      Player
 // ==========================================================================
 
-#player, html[mode=player] {
+#player, html[mode="player"] {
     .iteminfo {
 //        .ui-left, .ui-right, .ui-bottom .edit {
         .ui-left, .ui-right {
@@ -539,17 +539,17 @@ a {
 //      itemlist (Über Schieberegler gesteuert)
 // ==========================================================================
 
-#body[filter~=no_rating_0] .itemlist .itemlist-entry[rating="0"],
-#body[filter~=no_rating_1] .itemlist .itemlist-entry[rating="1"],
-#body[filter~=no_rating_2] .itemlist .itemlist-entry[rating="2"],
-#body[filter~=no_rating_3] .itemlist .itemlist-entry[rating="3"],
-#body[filter~=no_rating_4] .itemlist .itemlist-entry[rating="4"],
-#body[filter~=no_rating_5] .itemlist .itemlist-entry[rating="5"],
-#body[filter~=no_rating_6] .itemlist .itemlist-entry[rating="6"],
-#body[filter~=no_rating_7] .itemlist .itemlist-entry[rating="7"],
-#body[filter~=no_rating_8] .itemlist .itemlist-entry[rating="8"],
-#body[filter~=no_rating_9] .itemlist .itemlist-entry[rating="9"],
-#body[filter~=no_rating_10] .itemlist .itemlist-entry[rating="10"] {
+#body[filter~="no_rating_0"] .itemlist .itemlist-entry[rating="0"],
+#body[filter~="no_rating_1"] .itemlist .itemlist-entry[rating="1"],
+#body[filter~="no_rating_2"] .itemlist .itemlist-entry[rating="2"],
+#body[filter~="no_rating_3"] .itemlist .itemlist-entry[rating="3"],
+#body[filter~="no_rating_4"] .itemlist .itemlist-entry[rating="4"],
+#body[filter~="no_rating_5"] .itemlist .itemlist-entry[rating="5"],
+#body[filter~="no_rating_6"] .itemlist .itemlist-entry[rating="6"],
+#body[filter~="no_rating_7"] .itemlist .itemlist-entry[rating="7"],
+#body[filter~="no_rating_8"] .itemlist .itemlist-entry[rating="8"],
+#body[filter~="no_rating_9"] .itemlist .itemlist-entry[rating="9"],
+#body[filter~="no_rating_10"] .itemlist .itemlist-entry[rating="10"] {
     display: none;
 }
 
@@ -558,7 +558,7 @@ a {
 //      Playlisten-Auswahl und Filter
 // ==========================================================================
 
-html[mode=player] {
+html[mode="player"] {
     #main-c {
         top: $list_top_player;
     }
@@ -578,7 +578,7 @@ html[mode=player] {
         display: block;
     }
 }
-html[mode=target] {
+html[mode="target"] {
     #playlistselect {
         option.virtual, option.search {
             display: none;
@@ -598,7 +598,7 @@ html[mode=target] {
         display: block;
     }
 }
-html[mode=source] {
+html[mode="source"] {
     #pl-source {
         background-color: #FFF;
         border-bottom-color: #FFF;
@@ -801,7 +801,7 @@ html[mode=source] {
     z-index: 10000;
 }
 
-html[json=busy] #json-busy {
+html[json="busy"] #json-busy {
     display: block;
 }
 

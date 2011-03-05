@@ -13,6 +13,7 @@ use Cwd;
 use Data::Dumper;
 
 use FileDB;
+use FileEncode;
 use ParseHoerdat;
 use Conf;
 
@@ -20,8 +21,8 @@ my $conf= Conf->new(
     './wui.conf',
     {
         basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
-        mp3url     => undef,
-        oggurl     => undef,
+        fileurl    => undef,
+        encodeurl  => undef,
         md5db      => undef,
         hoerdatdb  => undef,
         fulltextdb => undef,
@@ -30,6 +31,9 @@ my $conf= Conf->new(
         timeout    => 31_536_000,
         users      => undef,
         pingsemaphore => undef,
+
+        encode_tempdir => '/mnt/vandusen/temp',
+        encode_tempcount => 100,
     }
 );
 
@@ -82,6 +86,7 @@ sub new {
         'getplaylist'           => sub { $self->_cmd_getPlaylist() },
         'getplaylists'          => sub { $self->_cmd_getPlaylists() },
         'player-status'         => sub { $self->_cmd_setPlayerStatus() },
+        'prepareFile'           => sub { $self->_cmd_prepareFile() },
         'queryhoerdat'          => sub { $self->_cmd_queryHoerdat() },
         'remove-from-playlist'  => sub { $self->_cmd_removeFromPlaylist() },
         'rename-playlist'       => sub { $self->_cmd_renamePlaylist() },
@@ -344,8 +349,8 @@ sub _cmd_getGlobalData {
         $hPlayerStatus->{$sStatus}= $self->{cookies}{'playerstatus_' . $sStatus};
     }
     return $self->_buildJson({
-        'mp3url'           => $conf->get('mp3url'),
-        'oggurl'           => $conf->get('oggurl'),
+        'fileurl'          => $conf->get('fileurl'),
+        'encodeurl'        => $conf->get('encodeurl'),
         'player-status'    => $hPlayerStatus,
         'last-playlist-id' => $self->{cookies}{last_playlist_id},
     });
@@ -557,6 +562,20 @@ sub _cmd_search {
     return $self->_buildJson($filedb->getPlaylist("search:$sSearch"));
 }
 
+sub _cmd_prepareFile {
+    my $self= shift;
+
+    my $sFileName= $self->{data}{file};
+    my $sFormat= $self->{data}{format};
+
+    my $encoder= FileEncode->new($conf);
+
+    return $self->_buildJson($encoder->encode({
+        filename => $sFileName,
+        format => $sFormat,
+    }));
+}
+
 sub _indexBody {
     return '
         <div id="body-c">
@@ -672,6 +691,20 @@ sub _indexBody {
         </div>
         <div id="json-busy">
             working...
+        </div>
+        <div id="dummyplayer" style="display: none;">
+            <span class="jp-play"></span>
+            <span class="jp-pause"></span>
+            <span class="jp-stop"></span>
+            <span class="jp-video-play"></span>
+            <span class="jp-seek-bar"></span>
+            <span class="jp-play-bar"></span>
+            <span class="jp-mute"></span>
+            <span class="jp-unmute"></span>
+            <span class="jp-volume-bar"></span>
+            <span class="jp-volume-bar-value"></span>
+            <span class="jp-current-time"></span>
+            <span class="jp-duration"></span>
         </div>
     ';
 }

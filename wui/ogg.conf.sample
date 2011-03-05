@@ -1,10 +1,5 @@
 # ogg's config file
 
 basedir = base_dir_to_plays
-tempdir = temp_dir_to_cache_encoded_filed
-tempcount = 20
 port = 8081
 
-# if set, already converted files will be served from this url
-# if hostname is omitted, requests hostname will be user
-redirectbase = http://[hostname]/[path]

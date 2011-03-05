@@ -18,110 +18,21 @@ my $conf= Conf->new(
     './ogg.conf',
     {
         basedir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
-        tempdir    => sub { my $v= Cwd::abs_path(shift); $v=~ s/\/$//; $v },
-        tempcount  => 20,
-        redirectbase => undef,
         port       => 8081,
     }
 );
 
 my $port= $conf->get('port');
 
-sub buildInFileName {
-        my $reqFile= shift;
-        return File::Spec->catfile($conf->get('basedir'), $reqFile);
-}
-
-sub buildOutFileName {
-        my $reqFile= shift;
-        return File::Spec->catfile($conf->get('tempdir'), md5_hex($reqFile) . '.ogg');
-}
-
-sub buildTheoraCommand {
-        my $sFile= shift || '';
-        my $sOutFile= shift || 'tmp';
-        my $sTmpFile= "$sOutFile.tmp";
-        $sFile=~ s/\\/\\\\/g;
-        $sFile=~ s/\"/\\\"/g;
-#        return 'ffmpeg -i "' . $sFile . '" -vn -acodec libmp3lame -aq 6 "' . $sTmpFile . '" && mv "' . $sTmpFile . '" "' . $sOutFile . '"';
-        return 'ffmpeg2theora --novideo --output "' . $sTmpFile . '" "' . $sFile . '" && mv "' . $sTmpFile . '" "' . $sOutFile . '"';
-}
-
-sub cleanupDir {
-    # read temp dir and delete oldest files if more than configured in "tempcount"
-    my $dh;
-    my $dir= $conf->get('tempdir');
-    opendir($dh, $dir) or die "Temp dir '$dir' does not exist!";
-    my %files= map { (stat)[9] => $_ } grep { -f } map { "$dir/$_" } readdir $dh;
-    closedir $dh;
-    my @keys= sort {$b <=> $a} keys %files;
-    splice @keys, 0, $conf->get('tempcount');
-    unlink $files{$_} for (@keys);
-}
-
-# Include POE, POE::Component::Server::TCP, and the filters necessary
-# to stream web content.
 use POE qw(Component::Server::TCP Filter::HTTPD Filter::Stream);
 
 
 sub closeConnection {
     my ($kernel, $heap)= @_;
-    if ($heap->{pid}) {
-        kill SIGINT, $heap->{pid};
-        waitpid $heap->{pid}, 0;
-        delete $heap->{pid};
-    }
     delete $heap->{file_name};
+    delete $heap->{temp_name};
     delete $heap->{stream_fh};
     $kernel->yield("shutdown");
-}
-
-sub pidRunning {
-    my $heap= shift;
-    my $pid= $heap->{pid};
-    return 0 unless $pid;
-    return 1 if kill SIGCHLD, $pid;
-    waitpid $pid, 0;
-    delete $heap->{pid};
-    return 0;
-}
-
-sub buildUrl {
-    my $url= shift;
-    my $request= shift;
-
-    my $protocol= 'http';
-    my $host= $request->header('host');
-    $host=~ s/\:.+//;
-    my $port= '';
-    my $path= '';
-
-    my @parts= split /\:\/\//, $url;
-    if (scalar @parts > 1) {
-        $protocol= shift(@parts) || $protocol;
-    }
-    @parts= split /\//, $parts[0];
-    my $hostport= shift @parts;
-    if (scalar @parts) {
-        $path= join '/', @parts;
-    }
-    @parts= split /\:/, $hostport;
-    if (scalar @parts > 1) {
-        $port= pop @parts;
-        @parts= (join ':', @parts);
-    }
-    if (defined $parts[0] && $parts[0] ne '') {
-        $host= $parts[0];
-    }
-    if ($port) {
-        if ($port == 80 && $protocol eq 'http' || $port == 443 && $protocol eq 'https') {
-            $port= '';
-        }
-        else {
-            $port= ":$port";
-        }
-    }
-    return "$protocol://$host$port/$path";
 }
 
 # Spawn a web server on port 8081 of all interfaces.
@@ -142,8 +53,6 @@ POE::Component::Server::TCP->new(
     ClientFlushed => sub {
         my ($kernel, $heap) = @_[KERNEL, HEAP];
 
-        waitpid(-1, WNOHANG);
-
         # The first flush means that headers were sent.    Open the file
         # to be streamed, and switch to POE's Stream filter.    This
         # allows the content to pass through POE without being changed.
@@ -158,6 +67,8 @@ POE::Component::Server::TCP->new(
                 return closeConnection($kernel, $heap);
             }
 
+            print "Serving file '$file_name'\n";
+
             # So that DOS-like systems do not perform ASCII transfers.
             binmode($file_handle);
             $heap->{client}->set_output_filter(POE::Filter::Stream->new());
@@ -171,15 +82,15 @@ POE::Component::Server::TCP->new(
         my $i= 0;
         while ($bytes_read == 0) {
             $bytes_read= sysread($heap->{stream_fh}, $buffer, 4096);
-            last unless pidRunning $heap;
             last if $bytes_read;
-# print "underrun (" . ++$i . ")...\n";
+            last unless -f $heap->{temp_name};
             sleep 1;
         }
         if ($bytes_read) {
             $heap->{client}->put($buffer);
         }
         else {
+            print "Finished file '" . $heap->{file_name} . "'\n";
             closeConnection($kernel, $heap);
         }
     },
@@ -200,46 +111,17 @@ POE::Component::Server::TCP->new(
         }
 
         my $sReqFile= uri_unescape $request->uri->path;
-        my $sInFile= buildInFileName($sReqFile);
+        my $sInFile= $conf->get('basedir') . "/$sReqFile";
+        my $sTempFile= "$sInFile.tmp";
+        $sInFile= $sTempFile unless -f $sInFile;
         unless (-f $sInFile) {
             my $response = HTTP::Response->new(404);
             $response->content("Could not find file '$sReqFile'");
             $heap->{client}->put($response);
             return;
         }
-        my $sOutFile= buildOutFileName($sReqFile);
-        $heap->{file_name}= $sOutFile;
-        if (-f $sOutFile) {
-            `touch "$sOutFile"`;
-            my $sRedirectBase= buildUrl($conf->get('redirectbase'), $request);
-            if ($sRedirectBase) {
-                my $response = HTTP::Response->new(303);
-                my $sBaseName= $sOutFile;
-                $sBaseName=~ s/.*\///;
-                my $sLocation= "$sRedirectBase/$sBaseName";
-                $response->push_header('Location', $sLocation);
-                $heap->{client}->put($response);
-                delete $heap->{file_name};
-                print "Redirecting to '$sLocation'\n";
-                return;
-            }
-            print "Serving cached file '$sOutFile'\n";
-        }
-        else {
-            cleanupDir;
-            my $sTempFile= "$sOutFile.tmp";
-            unlink $sTempFile if -f $sTempFile;
-            my $cmd= buildTheoraCommand($sInFile, $sOutFile);
-            my $pid= fork();
-            if ($pid == 0) {
-                exec $cmd;
-            }
-            $heap->{pid}= $pid;
-            $heap->{file_name}= $sTempFile;
-
-            # wait for file to be created
-            sleep 1 while pidRunning($heap) && (! -r $sTempFile);
-        }
+        $heap->{file_name}= $sInFile;
+        $heap->{temp_name}= $sTempFile;
 
         # The request is real and fully formed.    Create and send back
         # headers in preparation for streaming the music.

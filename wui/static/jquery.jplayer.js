@@ -1,1 +1,1 @@
-jquery.jplayer.min.js
+jplayer/current/jquery.jplayer.min.js

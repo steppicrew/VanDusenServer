@@ -41,6 +41,10 @@ sub new {
             readonly   => undef,
             timeout    => 31_536_000,
             users      => undef,
+            pingsemaphore => undef,
+
+            encode_tempdir => '/mnt/vandusen/temp',
+            encode_tempcount => 100,
         }
     );
 
