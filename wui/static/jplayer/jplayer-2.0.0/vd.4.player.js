@@ -187,6 +187,7 @@ jQuery(function($, undefined) {
 
     var setup= function(status, file_url, encode_url, fn_getPlaylist, fn_loadPlaylist) {
         var buildUrl= function(url) {
+            if (url == null) return null;
             var protocol= 'http';
             var host= window.location.hostname;
             var port= undefined;

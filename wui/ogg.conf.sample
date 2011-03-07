@@ -1,5 +1,7 @@
 # ogg's config file
 
 basedir = base_dir_to_plays
+tempcount = 20
+
 port = 8081
 
