@@ -32,7 +32,7 @@ my $conf= Conf->new(
         users      => undef,
         pingsemaphore => undef,
 
-        encode_tempdir => '/mnt/vandusen/temp',
+        encode_tempdir => sub { my $v= Cwd::abs_path(shift || 'tmp'); $v=~ s/\/$//; $v },
         encode_tempcount => 100,
     }
 );
