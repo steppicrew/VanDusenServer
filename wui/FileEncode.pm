@@ -57,7 +57,7 @@ sub encode {
         unlink $sTempFileName if -f $sTempFileName;
         my $cmd= $self->buildTheoraCommand($sInFileName, $sOutFileName);
         system "$cmd &";
-        sleep 3;
+        sleep 1;
     }
 
     print "play file '$sRelOutFileName'\n";
