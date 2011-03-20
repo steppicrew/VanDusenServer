@@ -301,12 +301,12 @@ jQuery(function($, undefined) {
             else if ($(this).hasClass('prev')) {
                 console.debug('Prev');
                 // prev title, queue_only if not playing
-                nextTitle(-1, playerStatus == 'pause');
+                nextTitle(-1, !jPlayer.playing());
             }
             else if ($(this).hasClass('next')) {
                 console.debug('Next');
                 // next title, queue_only if not playing
-                nextTitle(1, playerStatus == 'pause');
+                nextTitle(1, !jPlayer.playing());
             }
             else if ($(this).hasClass('open')) {
                 Event.fire('selectPlaylist', Playlist.getPlaylist(_player_status['playlist-id'], 'create if not exists'));
