@@ -211,7 +211,7 @@ jQuery(function($, undefined) {
                     port= ':' + port;
                 }
             }
-            return protocol + '://' + host + port
+            return protocol + '://' + host + (port || '')
         }
 
         _file_url= buildUrl(file_url);
