@@ -398,7 +398,8 @@ jQuery(function($, undefined) {
 // ============================================================================
 
     var ping= new DelayedFunc(60000, function() {
-        doJsonRequest('ping', {}, function() { ping.start() });
+        ping.start()
+        doJsonRequest('ping', {}, function() { ping.start() })
     });
     ping.now();
 
