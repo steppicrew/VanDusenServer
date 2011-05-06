@@ -10,6 +10,7 @@ import os
 import time
 import socket
 import sqlite3
+import random
 
 # size of files where no "similar file serach" is done
 MIN_FUZZY_MATCH_SIZE = 1024 * 1024 * 10
@@ -27,14 +28,13 @@ FTP_RECONNECT_DELAY = 60
 
 class FTPFetch:
     """A simple class to FTP files."""
-    def __init__(self,  host, port,  user,  passwd, params):
+    def __init__(self,  host, port,  credentials, params):
         """Requires host name, user name, password and destination directory."""
         self.__ftp = None
         self.__ftp_data = {
             'host': host,
             'port': port,
-            'user': user,
-            'passwd': passwd,
+            'credentials': credentials,
         }
         if 'logger' in params:
             self._logger = params['logger']
@@ -89,17 +89,19 @@ class FTPFetch:
                         +  " (try " + unicode(i_trynum) + ")...")
             try:
                 self.__ftp = FTP()
+                credentials= random.choice(self.__ftp_data['credentials'])
                 try:
                     self.__ftp.connect(self.__ftp_data['host'], self.__ftp_data['port'])
                     self.__ftp.login(
-                        self.__ftp_data['user'],
-                        self.__ftp_data['passwd']
+                        credentials['username'],
+                        credentials['password']
                     )
-                    self._logger.info("done")
+                    self._logger.info("done (" + credentials['username'] + ")")
                     return 1
                 except all_errors:
                     self._logger.error(
-                        "Could not authenticate to " + self.__ftp_data['host']
+                        "Could not authenticate to " + self.__ftp_data['host'] + " as " + credentials['username'] + "/" + credentials['password']
+
                     )
             except all_errors:
                 self._logger.error(

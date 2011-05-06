@@ -11,8 +11,9 @@ class Config(object):
         """
         self.ftp_hostname= 'hostname or ip address'
         self.ftp_port= 21
-        self.ftp_username= 'my secret user name'
-        self.ftp_password= 'my even more secret password'
+        self.credentials= [
+            { 'username': 'my secret user name', 'password': 'my even more secret password' },
+        ]
 
         """base path for all managed directories"""
         self.base_path= '/mnt/hoerspiele'

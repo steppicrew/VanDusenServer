@@ -29,6 +29,7 @@ def __main__():
                 '^' + u_base_path + '/scripts',
                 '^' + u_base_path + '/temp',
                 '^' + u_base_path + '/txt',
+                '^' + u_base_path + '/semaphores',
                 '\.tmp$',
                 '\.tmp\.\d+$',
                 '\.db$'
