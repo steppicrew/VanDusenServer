@@ -60,6 +60,12 @@ jQuery(function($, undefined) {
             Util.setHtml($dialog_iteminfo, content.render());
             $dialog_iteminfo.dialog('option', 'title', _title(title));
             $dialog_iteminfo.dialog('open');
+            var $play_button= $('#dialog-iteminfo-play');
+            if ($play_button.length < 1) {
+                $play_button= $('<span id="dialog-iteminfo-play" class="ui-icon ui-icon-play"></span>');
+                $dialog_iteminfo.parent('.ui-dialog').find('.ui-dialog-title').before($play_button);
+            }
+            $play_button.unbind('click').bind('click', function() { Event.fire('playItem', uid, getCurrentPlaylist()) });
         };
 
         if ($(event.target).hasClass('file-count')) {
