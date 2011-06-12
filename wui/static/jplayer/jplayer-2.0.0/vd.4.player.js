@@ -434,6 +434,7 @@ jQuery(function($, undefined) {
             function(json) {
                 jPlayer.set('setMedia', {
                     oga: (json.encoding == 1 ? _encode_url : _file_url) + json.path,
+//                    mp3: _file_url + filename,
                 })
 //              jPlayer('setFile', _base_url + '/0' + Math.floor(Math.random() * 9 + 1) + '.mp3')
                 jPlayer.play()
