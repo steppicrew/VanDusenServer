@@ -639,12 +639,12 @@ jQuery(function($, undefined) {
                 }
             }
             var td_class= (!dont_edit && doEdit) ? 'editable' : ''
-            var class= '';
+            var _class= '';
             if (classes.length) {
-                class= ' class="' + classes.join(' ') + '"';
+                _class= ' class="' + classes.join(' ') + '"';
             }
 
-            table.addRow([ title + ':', '<span field="' + field + '"' + class + '>' + text + '</span>' ], {'td': [ 'td-right', td_class ]});
+            table.addRow([ title + ':', '<span field="' + field + '"' + _class + '>' + text + '</span>' ], {'td': [ 'td-right', td_class ]});
         }
 
         dimm('title',        'Titel', formatTitle);

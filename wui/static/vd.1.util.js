@@ -292,11 +292,11 @@ jQuery(function($, undefined) {
 
         this.addTable= function(classes) {
             rownum= 0;
-            var class= '';
+            var _class= '';
             if (classes) {
-                class= ' class="' + classes.join(' ') + '"';
+                _class= ' class="' + classes.join(' ') + '"';
             }
-            return this.add('<table' + class + '>', '</table>');
+            return this.add('<table' + _class + '>', '</table>');
         };
 
         this.addRow= function(row, class_data) {
