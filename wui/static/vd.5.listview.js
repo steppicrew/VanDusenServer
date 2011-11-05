@@ -895,6 +895,7 @@ jQuery(function($, undefined) {
             var uid= $(this).parents('.iteminfo').attr('uid');
             // div will bes shown. update contents
             var detail_div= $('#edit-itemdetails')[0];
+            showItemTooltip.stop()
             fillItemDetails(uid, detail_div);
             $('#edit-item').dialog('option', 'title', _title(getItem(uid).text('title'))).dialog('open');
             return false;
